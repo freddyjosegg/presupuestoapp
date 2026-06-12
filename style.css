@@ -1227,6 +1227,15 @@ input:disabled {
     margin-top: 4px;
 }
 
+.bs-note {
+    font-size: 0.72rem;
+    color: var(--text-secondary);
+    text-align: right;
+    margin-top: 2px;
+    font-style: italic;
+    opacity: 0.85;
+}
+
 /* Receipt Actions - Mobile first (stacked) */
 .receipt-actions {
     display: grid;

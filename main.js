@@ -812,7 +812,8 @@ function runScenario(tariffType, isCOD, weight, escala, declaredVal, discPercent
     const totalUSD = igtfBase + igtfVal;
     
     // 13. Total Bs
-    const totalBs = totalUSD * exRate;
+    // El IGTF solo aplica para pagos en divisas, por lo que el total en bolívares lo excluye.
+    const totalBs = igtfBase * exRate;
     
     return {
         baseFreight,
