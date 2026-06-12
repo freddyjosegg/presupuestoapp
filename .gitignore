@@ -1,0 +1,17 @@
+# Temporary Excel files
+~$*.xlsx
+~$*.xlsm
+~$*.xls
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# IDEs
+.vscode/
+.idea/
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.swp

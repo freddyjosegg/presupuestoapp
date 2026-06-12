@@ -1,0 +1,396 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Calculadora de Tarifas y Presupuesto de Fletes</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="style.css">
+    <!-- SheetJS CDN -->
+    <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+</head>
+<body>
+    <div class="app-container">
+        <!-- Header Section -->
+        <header class="app-header">
+            <div class="logo-area">
+                <svg class="logo-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4" />
+                </svg>
+                <div class="logo-text">
+                    <h1>Presupuesto<span>App</span></h1>
+                    <p>Calculadora de Fletes & Paquetería</p>
+                </div>
+            </div>
+            
+            <!-- Excel Watcher Status -->
+            <div class="excel-status-card" id="excelStatus">
+                <div class="status-indicator loading"></div>
+                <div class="status-info">
+                    <span class="status-title">Cargando base de datos...</span>
+                    <span class="status-desc">Iniciando base de datos Excel...</span>
+                </div>
+            </div>
+        </header>
+
+        <!-- Main Workspace -->
+        <main class="app-workspace">
+            <!-- Left Panel: Inputs and Configuration -->
+            <section class="control-panel">
+                <!-- Drag & Drop Zone -->
+                <div class="drag-drop-zone" id="dropzone">
+                    <svg class="upload-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12" />
+                    </svg>
+                    <div class="dropzone-text">
+                        <p class="main-text">Arrastra aquí el archivo Excel</p>
+                        <p class="sub-text">Para actualizar tarifas y constantes al instante</p>
+                    </div>
+                    <input type="file" id="excelFileInput" accept=".xlsx, .xlsm" style="display: none;">
+                </div>
+
+                <!-- Input Form Card -->
+                <div class="card form-card">
+                    <div class="card-header">
+                        <h2>Datos del Envío</h2>
+                    </div>
+                    
+                    <div class="form-grid">
+                        <!-- Origin Selector -->
+                        <div class="form-group dropdown-group" id="originGroup">
+                            <label for="originInput">Origen</label>
+                            <div class="searchable-select">
+                                <input type="text" id="originInput" autocomplete="off" placeholder="Seleccione origen...">
+                                <button type="button" class="dropdown-arrow-btn">
+                                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 9l-7 7-7-7" /></svg>
+                                </button>
+                                <div class="dropdown-list" id="originList"></div>
+                            </div>
+                        </div>
+
+                        <!-- Destination Selector -->
+                        <div class="form-group dropdown-group" id="destinationGroup">
+                            <label for="destinationInput">Destino</label>
+                            <div class="searchable-select">
+                                <input type="text" id="destinationInput" autocomplete="off" placeholder="Seleccione destino...">
+                                <button type="button" class="dropdown-arrow-btn">
+                                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 9l-7 7-7-7" /></svg>
+                                </button>
+                                <div class="dropdown-list" id="destinationList"></div>
+                            </div>
+                        </div>
+
+                        <!-- Route Info (Shows Scale and KMS) -->
+                        <div class="route-info-card span-2 hidden" id="routeInfoCard">
+                            <div class="info-item">
+                                <span class="info-label">Escala Tarifaria</span>
+                                <span class="info-value" id="valEscala">-</span>
+                            </div>
+                            <div class="info-item">
+                                <span class="info-label">Distancia</span>
+                                <span class="info-value" id="valKms">-</span>
+                            </div>
+                            <div class="info-item">
+                                <span class="info-label">Destino Cobro</span>
+                                <span class="info-value" id="valAtiende">-</span>
+                            </div>
+                        </div>
+
+                        <!-- Weight (Kgs) -->
+                        <div class="form-group">
+                            <label for="weightInput">Peso Físico (kg)</label>
+                            <div class="input-with-unit">
+                                <input type="number" id="weightInput" min="0" step="0.001" value="0.0">
+                                <span class="unit">kg</span>
+                            </div>
+                        </div>
+
+                        <!-- Quantity of Packages (Bultos) -->
+                        <div class="form-group">
+                            <label for="bultosCount">Cantidad de Bultos</label>
+                            <input type="number" id="bultosCount" min="1" step="1" value="1">
+                        </div>
+
+                        <!-- Dimensions / Cubit (Largo x Ancho x Alto) -->
+                        <div class="form-group span-2 dimensions-box">
+                            <label>Dimensiones para Peso Volumétrico (Opcional)</label>
+                            <div class="dimensions-grid">
+                                <div class="dim-input">
+                                    <input type="number" id="dimLargo" placeholder="Largo" min="0" step="0.1">
+                                    <span class="dim-unit">cm</span>
+                                </div>
+                                <div class="dim-input">
+                                    <input type="number" id="dimAncho" placeholder="Ancho" min="0" step="0.1">
+                                    <span class="dim-unit">cm</span>
+                                </div>
+                                <div class="dim-input">
+                                    <input type="number" id="dimAlto" placeholder="Alto" min="0" step="0.1">
+                                    <span class="dim-unit">cm</span>
+                                </div>
+                            </div>
+                            <div class="cubing-result" id="cubingResult">
+                                <span>Peso por Cubaje: <strong id="valCubaje">0.00</strong> kg</span>
+                                <span class="divider">|</span>
+                                <span>Peso de cálculo: <strong id="valPesoFinal">0.00</strong> kg</span>
+                            </div>
+                        </div>
+
+                        <!-- Declared Value -->
+                        <div class="form-group">
+                            <label for="declaredValue">Valor Declarado de Mercancía</label>
+                            <div class="input-with-unit">
+                                <span class="currency-symbol">$</span>
+                                <input type="number" id="declaredValue" min="0" step="0.01" value="0.00">
+                            </div>
+                        </div>
+
+                        <!-- Exchange Rate (USD -> Bs) -->
+                        <div class="form-group">
+                            <label for="exchangeRate">Tasa de Cambio ($ -> Bs.)</label>
+                            <div class="input-with-unit">
+                                <span class="currency-symbol">Bs.</span>
+                                <input type="number" id="exchangeRate" min="0.01" step="0.01" value="36.50">
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Additional Services Card -->
+                <div class="card services-card">
+                    <div class="card-header">
+                        <h2>Cargos y Servicios Adicionales</h2>
+                    </div>
+                    <div class="services-list">
+                        <label class="switch-container">
+                            <div class="switch-label">
+                                <h3>Seguro de Mercancía</h3>
+                                <p>Costo adicional por valor declarado.</p>
+                            </div>
+                            <input type="checkbox" id="chkSeguro" checked>
+                            <span class="switch-slider"></span>
+                        </label>
+
+                        <label class="switch-container">
+                            <div class="switch-label">
+                                <h3>Acuse de Recibo (CAR)</h3>
+                                <p>Envío al remitente de constancia firmada.</p>
+                            </div>
+                            <input type="checkbox" id="chkCar">
+                            <span class="switch-slider"></span>
+                        </label>
+
+                        <label class="switch-container">
+                            <div class="switch-label">
+                                <h3>Acuse de Recibo con Factura (CAR F)</h3>
+                                <p>CAR adjuntando factura original firmada.</p>
+                            </div>
+                            <input type="checkbox" id="chkCarf">
+                            <span class="switch-slider"></span>
+                        </label>
+
+                        <label class="switch-container">
+                            <div class="switch-label">
+                                <h3>Servicio de Contenedores</h3>
+                                <p>10% del flete adicional por contenedor.</p>
+                            </div>
+                            <input type="checkbox" id="chkContenedor">
+                            <span class="switch-slider"></span>
+                        </label>
+
+                        <div class="discount-container">
+                            <div class="discount-label">
+                                <h3>Descuento Especial en Flete</h3>
+                                <p>Aplica descuento porcentual directo.</p>
+                            </div>
+                            <div class="discount-input-group">
+                                <input type="number" id="discountPercent" min="0" max="100" step="1" value="0">
+                                <span class="unit">%</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Detailed Packages List Accordion -->
+                <div class="card bultos-card">
+                    <div class="card-header" id="toggleBultosBtn">
+                        <h2>Detalle de Bultos Individuales (Opcional)</h2>
+                        <svg class="arrow-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 9l-7 7-7-7" /></svg>
+                    </div>
+                    <div class="bultos-content hidden" id="bultosContent">
+                        <p class="bultos-help">Ingresa el peso individual de cada bulto. El Franqueo Postal (10%) solo se calcula sobre los bultos menores o iguales a 30 kg.</p>
+                        <div class="bultos-list" id="bultosInputsContainer">
+                            <!-- Dynamically generated inputs -->
+                        </div>
+                        <button type="button" class="btn btn-secondary btn-sm" id="btnSyncBultos">Sincronizar pesos iguales</button>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Right Panel: Results Grid & Receipt Details -->
+            <section class="results-panel">
+                <!-- 2x2 Comparative Matrix -->
+                <div class="results-header">
+                    <h2>Matriz Comparativa de Presupuestos</h2>
+                    <span class="sub-title">Selecciona una opción para ver su factura detallada</span>
+                </div>
+                
+                <div class="matrix-grid">
+                    <!-- Option 1: Origen + Dirección -->
+                    <div class="matrix-card active" id="cardOrigDir" data-option="origDir">
+                        <div class="badge-tag tag-origen">PAGO EN ORIGEN</div>
+                        <div class="card-title">Entrega a Dirección</div>
+                        <div class="price-container">
+                            <span class="price-usd" id="matrixUSD_origDir">$0.00</span>
+                            <span class="price-bs" id="matrixBs_origDir">Bs. 0.00</span>
+                        </div>
+                        <div class="card-footer-info">Flete local o nacional sin cargos COD</div>
+                    </div>
+
+                    <!-- Option 2: Origen + Agencia -->
+                    <div class="matrix-card" id="cardOrigAge" data-option="origAge">
+                        <div class="badge-tag tag-origen">PAGO EN ORIGEN</div>
+                        <div class="card-title">Retiro en Agencia</div>
+                        <div class="price-container">
+                            <span class="price-usd" id="matrixUSD_origAge">$0.00</span>
+                            <span class="price-bs" id="matrixBs_origAge">Bs. 0.00</span>
+                        </div>
+                        <div class="card-footer-info">Retiro en oficina sin cargos COD</div>
+                    </div>
+
+                    <!-- Option 3: Destino (COD) + Dirección -->
+                    <div class="matrix-card" id="cardDestDir" data-option="destDir">
+                        <div class="badge-tag tag-destino">COBRO EN DESTINO</div>
+                        <div class="card-title">Entrega a Dirección</div>
+                        <div class="price-container">
+                            <span class="price-usd" id="matrixUSD_destDir">$0.00</span>
+                            <span class="price-bs" id="matrixBs_destDir">Bs. 0.00</span>
+                        </div>
+                        <div class="card-footer-info">Incluye recargo GCD (Flete + 10%)</div>
+                    </div>
+
+                    <!-- Option 4: Destino (COD) + Agencia -->
+                    <div class="matrix-card" id="cardDestAge" data-option="destAge">
+                        <div class="badge-tag tag-destino">COBRO EN DESTINO</div>
+                        <div class="card-title">Retiro en Agencia</div>
+                        <div class="price-container">
+                            <span class="price-usd" id="matrixUSD_destAge">$0.00</span>
+                            <span class="price-bs" id="matrixBs_destAge">Bs. 0.00</span>
+                        </div>
+                        <div class="card-footer-info">Incluye recargo GCD (Flete + 10%)</div>
+                    </div>
+                </div>
+
+                <!-- Selected Scenario Invoice Breakdown (Receipt View) -->
+                <div class="receipt-card" id="receipt">
+                    <div class="receipt-header">
+                        <div class="receipt-title-area">
+                            <span class="receipt-badge" id="receiptBadge">Pago en Origen</span>
+                            <h3 id="receiptTitle">Presupuesto: Entrega a Dirección</h3>
+                        </div>
+                        <div class="receipt-meta">
+                            <span id="receiptDate">Fecha: 12/06/2026</span>
+                            <span id="receiptRoute">Ruta: -</span>
+                        </div>
+                    </div>
+                    
+                    <div class="receipt-body">
+                        <!-- Cost Line Items -->
+                        <div class="receipt-section">
+                            <h4>Desglose de Conceptos</h4>
+                            <div class="receipt-item">
+                                <span>Flete Base</span>
+                                <span class="value usd" id="itemBaseUSD">$0.00</span>
+                            </div>
+                            <div class="receipt-item discount-row hidden" id="discountRow">
+                                <span>Descuento (<span id="itemDiscountPercent">0</span>%)</span>
+                                <span class="value usd text-success" id="itemDiscountUSD">-$0.00</span>
+                            </div>
+                            <div class="receipt-item flete-neto-row hidden" id="fleteNetoRow">
+                                <span>Flete Neto</span>
+                                <span class="value usd font-semibold" id="itemNetUSD">$0.00</span>
+                            </div>
+                            
+                            <!-- Additional charges -->
+                            <div class="receipt-item" id="itemTdgRow">
+                                <span>Trámite de Guía (TDG > 160kg)</span>
+                                <span class="value usd" id="itemTdgUSD">$0.00</span>
+                            </div>
+                            <div class="receipt-item" id="itemGcdRow">
+                                <span>Cobro a Destino (GCD)</span>
+                                <span class="value usd" id="itemGcdUSD">$0.00</span>
+                            </div>
+                            <div class="receipt-item" id="itemCarRow">
+                                <span>Acuse de Recibo (CAR)</span>
+                                <span class="value usd" id="itemCarUSD">$0.00</span>
+                            </div>
+                            <div class="receipt-item" id="itemCarfRow">
+                                <span>Acuse de Recibo con Factura (CAR F)</span>
+                                <span class="value usd" id="itemCarfUSD">$0.00</span>
+                            </div>
+                            <div class="receipt-item" id="itemSeguroRow">
+                                <span>Seguro de Mercancía</span>
+                                <span class="value usd" id="itemSeguroUSD">$0.00</span>
+                            </div>
+                            <div class="receipt-item" id="itemContenedorRow">
+                                <span>Contenedor</span>
+                                <span class="value usd" id="itemContenedorUSD">$0.00</span>
+                            </div>
+                        </div>
+
+                        <!-- Taxes Section -->
+                        <div class="receipt-section">
+                            <div class="receipt-item">
+                                <span>Subtotal (Base Imponible)</span>
+                                <span class="value usd font-semibold" id="itemSubtotalUSD">$0.00</span>
+                            </div>
+                            <div class="receipt-item">
+                                <span>IVA (16.00%)</span>
+                                <span class="value usd" id="itemIvaUSD">$0.00</span>
+                            </div>
+                            <div class="receipt-item">
+                                <span>Franqueo Postal IPOSTEL (10.00%)</span>
+                                <span class="value usd" id="itemFranqueoUSD">$0.00</span>
+                            </div>
+                            <div class="receipt-item">
+                                <span>IGTF (3.00%)</span>
+                                <span class="value usd" id="itemIgtfUSD">$0.00</span>
+                            </div>
+                        </div>
+
+                        <!-- Totals Area -->
+                        <div class="receipt-total-block">
+                            <div class="total-row">
+                                <span class="total-label">TOTAL PRESUPUESTO ($)</span>
+                                <span class="total-value usd" id="itemTotalUSD">$0.00</span>
+                            </div>
+                            <div class="total-row bs-row">
+                                <span class="total-label">TOTAL PRESUPUESTO (Bs.)</span>
+                                <span class="total-value bs" id="itemTotalBs">Bs. 0.00</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Action buttons -->
+                    <div class="receipt-actions">
+                        <button class="btn btn-secondary" id="btnPrint">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z" /></svg>
+                            Imprimir Presupuesto
+                        </button>
+                        <button class="btn btn-primary" id="btnCopy">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M8 5H6a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2v-1M8 5a2 2 0 002 2h2a2 2 0 002-2M8 5a2 2 0 012-2h2a2 2 0 012 2m0 0h2a2 2 0 012 2v3m2 4H10m0 0l3-3m-3 3l3 3" /></svg>
+                            Copiar Resumen
+                        </button>
+                    </div>
+                </div>
+            </section>
+        </main>
+    </div>
+
+    <!-- Notification Toast -->
+    <div id="toast" class="toast hidden"></div>
+
+    <script src="main.js" type="module"></script>
+</body>
+</html>

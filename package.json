@@ -1,0 +1,17 @@
+{
+  "name": "presupuestoapp",
+  "version": "1.0.0",
+  "description": "Calculadora de fletes basada en tarifas de Excel para Vercel",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js",
+    "dev": "node server.js"
+  },
+  "keywords": [
+    "fletes",
+    "excel",
+    "calc"
+  ],
+  "author": "Fred",
+  "license": "ISC"
+}
