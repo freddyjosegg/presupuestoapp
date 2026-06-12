@@ -28,6 +28,8 @@ let appState = {
     excelDate: ''
 };
 
+let userEditedRate = false;
+
 // UI Elements
 const dropzone = document.getElementById('dropzone');
 const excelFileInput = document.getElementById('excelFileInput');
@@ -110,17 +112,21 @@ async function fetchBCVRate(silent = false) {
     }
     
     try {
-        const response = await fetch(BCV_API_URL);
+        // Force fresh load using cache-buster query param
+        const response = await fetch(`${BCV_API_URL}?t=${Date.now()}`);
         if (!response.ok) throw new Error('Network response was not ok');
         
         const data = await response.json();
         const rate = parseFloat(data.promedio);
         
         if (!isNaN(rate) && rate > 0) {
-            exchangeRate.value = rate.toFixed(2);
-            calculateAll();
-            if (!silent) {
-                showToast(`Tasa BCV actualizada: Bs. ${rate.toFixed(2)}`);
+            // Overwrite only if user hasn't typed a custom rate, or they clicked refresh (not silent)
+            if (!userEditedRate || !silent) {
+                exchangeRate.value = rate.toFixed(2);
+                calculateAll();
+                if (!silent) {
+                    showToast(`Tasa BCV actualizada: Bs. ${rate.toFixed(2)}`);
+                }
             }
         }
     } catch (error) {
@@ -464,6 +470,9 @@ function setupEventListeners() {
         input.addEventListener('input', () => {
             if (input === weightInput || input === bultosCount) {
                 syncBultosList();
+            }
+            if (input === exchangeRate) {
+                userEditedRate = true;
             }
             calculateAll();
         });
