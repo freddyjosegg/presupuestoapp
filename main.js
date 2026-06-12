@@ -1,6 +1,7 @@
 // Configuration and Constants
 const DEFAULT_EXCEL_PATH = 'TARIFA ACTUAL PAQUETERIA USD 210526.xlsm';
 const STORAGE_KEY = 'presupuestoapp_db';
+const BCV_API_URL = 'https://ve.dolarapi.com/v1/dolares/oficial';
 
 // State of the application
 let appState = {
@@ -60,6 +61,7 @@ const bultosInputsContainer = document.getElementById('bultosInputsContainer');
 const btnSyncBultos = document.getElementById('btnSyncBultos');
 const btnPrint = document.getElementById('btnPrint');
 const btnCopy = document.getElementById('btnCopy');
+const btnFetchRate = document.getElementById('btnFetchRate');
 const toast = document.getElementById('toast');
 
 // Matrix Card Elements
@@ -78,6 +80,9 @@ window.addEventListener('DOMContentLoaded', () => {
 function initApp() {
     setupEventListeners();
     
+    // Fetch BCV Rate at startup
+    fetchBCVRate(true);
+    
     // 1. Try loading from LocalStorage
     const cachedData = localStorage.getItem(STORAGE_KEY);
     if (cachedData) {
@@ -95,6 +100,38 @@ function initApp() {
         }
     } else {
         fetchDefaultExcel();
+    }
+}
+
+// Fetch BCV Exchange Rate from ve.dolarapi.com
+async function fetchBCVRate(silent = false) {
+    if (btnFetchRate) {
+        btnFetchRate.classList.add('loading');
+    }
+    
+    try {
+        const response = await fetch(BCV_API_URL);
+        if (!response.ok) throw new Error('Network response was not ok');
+        
+        const data = await response.json();
+        const rate = parseFloat(data.promedio);
+        
+        if (!isNaN(rate) && rate > 0) {
+            exchangeRate.value = rate.toFixed(2);
+            calculateAll();
+            if (!silent) {
+                showToast(`Tasa BCV actualizada: Bs. ${rate.toFixed(2)}`);
+            }
+        }
+    } catch (error) {
+        console.error('Error fetching BCV rate:', error);
+        if (!silent) {
+            showToast('Error al conectar con la API de tasa de cambio', 'error');
+        }
+    } finally {
+        if (btnFetchRate) {
+            btnFetchRate.classList.remove('loading');
+        }
     }
 }
 
@@ -471,6 +508,11 @@ function setupEventListeners() {
     
     // Copy summary
     btnCopy.addEventListener('click', copySummaryToClipboard);
+    
+    // Fetch rate button
+    if (btnFetchRate) {
+        btnFetchRate.addEventListener('click', () => fetchBCVRate(false));
+    }
 }
 
 // Handle local Dropdown focus and open

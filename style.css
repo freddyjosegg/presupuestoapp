@@ -417,9 +417,54 @@ input[type="text"]:focus, input[type="number"]:focus {
     color: var(--text-secondary);
 }
 
-.input-with-unit input[id="declaredValue"],
+.input-with-unit input[id="declaredValue"] {
+    padding-left: 35px;
+}
+
 .input-with-unit input[id="exchangeRate"] {
     padding-left: 35px;
+    padding-right: 40px;
+}
+
+.btn-fetch-rate {
+    position: absolute;
+    right: 4px;
+    top: 4px;
+    bottom: 4px;
+    width: 32px;
+    background: transparent;
+    border: none;
+    color: var(--text-secondary);
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: var(--radius-sm);
+    transition: var(--transition-fast);
+}
+
+.btn-fetch-rate:hover {
+    background: rgba(255, 255, 255, 0.05);
+    color: var(--text-primary);
+}
+
+.btn-fetch-rate svg {
+    width: 16px;
+    height: 16px;
+    transition: var(--transition-fast);
+}
+
+.btn-fetch-rate:hover svg {
+    color: var(--primary);
+}
+
+.btn-fetch-rate.loading svg {
+    animation: spin-rate 1s linear infinite;
+}
+
+@keyframes spin-rate {
+    from { transform: rotate(0deg); }
+    to { transform: rotate(360deg); }
 }
 
 /* Route Info Card */
