@@ -1,27 +1,70 @@
 :root {
+    /* Aerocav corporate colors (Dark mode defaults) */
+    --primary: #d32f2f;
+    --primary-hover: #b71c1c;
+    --primary-glow: rgba(211, 47, 47, 0.15);
+    
     --bg-app: #080c14;
-    --bg-card: rgba(17, 24, 39, 0.7);
-    --border-color: rgba(255, 255, 255, 0.08);
+    --bg-card: rgba(17, 22, 37, 0.75);
+    --border-color: rgba(255, 255, 255, 0.05);
+    
     --text-primary: #f8fafc;
     --text-secondary: #94a3b8;
     --text-muted: #64748b;
-    --primary: #6366f1;
-    --primary-hover: #4f46e5;
-    --primary-glow: rgba(99, 102, 241, 0.15);
+    
+    --input-bg: rgba(255, 255, 255, 0.03);
+    --input-border: rgba(255, 255, 255, 0.08);
+    --dropdown-bg: #111827;
+    --switch-bg: rgba(255, 255, 255, 0.1);
+    --cubing-bg: rgba(255, 255, 255, 0.02);
+    
     --success: #10b981;
     --warning: #f59e0b;
     --error: #ef4444;
-    --accent: #0ea5e9;
-    --card-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.37);
-    --radius-lg: 16px;
+    --accent: #d32f2f;
+    
+    --card-shadow: 0 16px 36px rgba(0, 0, 0, 0.5);
+    --radius-lg: 20px;
     --radius-md: 10px;
     --radius-sm: 6px;
+    
     --transition-fast: 0.2s ease;
     --transition-normal: 0.3s cubic-bezier(0.4, 0, 0.2, 1);
     
     --receipt-bg: #1e293b;
     --receipt-text: #f8fafc;
     --receipt-line: rgba(255, 255, 255, 0.1);
+    
+    --bg-gradient: radial-gradient(at 0% 0%, rgba(211, 47, 47, 0.08) 0px, transparent 50%),
+                    radial-gradient(at 100% 100%, rgba(15, 23, 42, 0.9) 0px, transparent 50%);
+}
+
+@media (prefers-color-scheme: light) {
+    :root {
+        /* Aerocav light mode overrides */
+        --bg-app: #f8fafc;
+        --bg-card: rgba(255, 255, 255, 0.9);
+        --border-color: rgba(15, 23, 42, 0.06);
+        
+        --text-primary: #0f172a;
+        --text-secondary: #475569;
+        --text-muted: #64748b;
+        
+        --input-bg: #ffffff;
+        --input-border: rgba(15, 23, 42, 0.1);
+        --dropdown-bg: #ffffff;
+        --switch-bg: rgba(15, 23, 42, 0.05);
+        --cubing-bg: rgba(15, 23, 42, 0.02);
+        
+        --card-shadow: 0 16px 36px rgba(15, 23, 42, 0.05);
+        
+        --receipt-bg: #f1f5f9;
+        --receipt-text: #0f172a;
+        --receipt-line: rgba(15, 23, 42, 0.08);
+        
+        --bg-gradient: radial-gradient(at 0% 0%, rgba(211, 47, 47, 0.04) 0px, transparent 50%),
+                        radial-gradient(at 100% 100%, rgba(148, 163, 184, 0.15) 0px, transparent 50%);
+    }
 }
 
 /* Base Styles */
@@ -29,19 +72,21 @@
     box-sizing: border-box;
     margin: 0;
     padding: 0;
-    font-family: 'Outfit', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
 }
 
 body {
     background-color: var(--bg-app);
+    background-image: var(--bg-gradient);
+    background-attachment: fixed;
     color: var(--text-primary);
+    font-family: 'Inter', system-ui, -apple-system, sans-serif;
     min-height: 100vh;
     padding: 24px;
     overflow-x: hidden;
-    background-image: 
-        radial-gradient(at 0% 0%, rgba(99, 102, 241, 0.1) 0px, transparent 50%),
-        radial-gradient(at 100% 100%, rgba(14, 165, 233, 0.08) 0px, transparent 50%);
-    background-attachment: fixed;
+}
+
+h1, h2, h3, h4, .logo-text h1, .card-header h2, .receipt-header h3, .total-label {
+    font-family: 'Outfit', sans-serif;
 }
 
 /* Custom Scrollbars */
@@ -53,20 +98,20 @@ body {
     background: rgba(0, 0, 0, 0.1);
 }
 ::-webkit-scrollbar-thumb {
-    background: rgba(255, 255, 255, 0.15);
+    background: rgba(128, 128, 128, 0.2);
     border-radius: 4px;
 }
 ::-webkit-scrollbar-thumb:hover {
-    background: rgba(255, 255, 255, 0.3);
+    background: rgba(128, 128, 128, 0.4);
 }
 
 /* Layout Container */
 .app-container {
-    max-width: 1440px;
+    max-width: 1200px;
     margin: 0 auto;
     display: flex;
     flex-direction: column;
-    gap: 24px;
+    gap: 28px;
 }
 
 /* Header */
@@ -76,8 +121,8 @@ body {
     align-items: center;
     padding: 16px 24px;
     background: var(--bg-card);
-    backdrop-filter: blur(12px);
-    -webkit-backdrop-filter: blur(12px);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
     border: 1px solid var(--border-color);
     border-radius: var(--radius-lg);
     box-shadow: var(--card-shadow);
@@ -91,14 +136,14 @@ body {
 }
 
 .logo-icon {
-    width: 40px;
-    height: 40px;
+    width: 38px;
+    height: 38px;
     color: var(--primary);
-    filter: drop-shadow(0 0 8px rgba(99, 102, 241, 0.5));
+    filter: drop-shadow(0 0 6px rgba(211, 47, 47, 0.3));
 }
 
 .logo-text h1 {
-    font-size: 1.5rem;
+    font-size: 1.4rem;
     font-weight: 800;
     letter-spacing: -0.5px;
     line-height: 1.2;
@@ -106,11 +151,10 @@ body {
 
 .logo-text h1 span {
     color: var(--primary);
-    text-shadow: 0 0 10px rgba(99, 102, 241, 0.3);
 }
 
 .logo-text p {
-    font-size: 0.8rem;
+    font-size: 0.75rem;
     color: var(--text-secondary);
 }
 
@@ -121,15 +165,21 @@ body {
     gap: 12px;
     padding: 8px 16px;
     border-radius: var(--radius-md);
-    background: rgba(0, 0, 0, 0.2);
-    border: 1px solid rgba(255, 255, 255, 0.05);
+    background: rgba(0, 0, 0, 0.15);
+    border: 1px solid rgba(255, 255, 255, 0.03);
+}
+
+@media (prefers-color-scheme: light) {
+    .excel-status-card {
+        background: rgba(15, 23, 42, 0.03);
+        border: 1px solid rgba(15, 23, 42, 0.04);
+    }
 }
 
 .status-indicator {
-    width: 10px;
-    height: 10px;
+    width: 9px;
+    height: 9px;
     border-radius: 50%;
-    position: relative;
 }
 
 .status-indicator.loading {
@@ -140,12 +190,12 @@ body {
 
 .status-indicator.ready {
     background-color: var(--success);
-    box-shadow: 0 0 8px var(--success);
+    box-shadow: 0 0 6px var(--success);
 }
 
 .status-indicator.error {
     background-color: var(--error);
-    box-shadow: 0 0 8px var(--error);
+    box-shadow: 0 0 6px var(--error);
 }
 
 .status-info {
@@ -154,44 +204,58 @@ body {
 }
 
 .status-title {
-    font-size: 0.85rem;
-    font-weight: 600;
+    font-size: 0.8rem;
+    font-weight: 700;
 }
 
 .status-desc {
-    font-size: 0.75rem;
+    font-size: 0.7rem;
     color: var(--text-secondary);
 }
 
 /* App Workspace Grid */
 .app-workspace {
     display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 24px;
+    grid-template-columns: 320px 1fr;
+    gap: 32px;
     align-items: start;
 }
 
 @media (max-width: 1024px) {
     .app-workspace {
         grid-template-columns: 1fr;
+        gap: 24px;
     }
 }
 
 .control-panel, .results-panel {
     display: flex;
     flex-direction: column;
-    gap: 24px;
+    gap: 28px;
 }
 
 /* Cards (Glassmorphism) */
 .card {
     background: var(--bg-card);
-    backdrop-filter: blur(12px);
-    -webkit-backdrop-filter: blur(12px);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
     border: 1px solid var(--border-color);
     border-radius: var(--radius-lg);
     padding: 24px;
     box-shadow: var(--card-shadow);
+    position: relative;
+    overflow: hidden;
+}
+
+.form-card::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 4px;
+    background: linear-gradient(90deg, var(--primary), #f43f5e);
+    z-index: 5;
 }
 
 .card-header {
@@ -202,30 +266,29 @@ body {
 }
 
 .card-header h2 {
-    font-size: 1.2rem;
+    font-size: 1.15rem;
     font-weight: 700;
     color: var(--text-primary);
-    position: relative;
-    padding-left: 12px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
 }
 
 .card-header h2::before {
     content: '';
-    position: absolute;
-    left: 0;
-    top: 3px;
-    bottom: 3px;
-    width: 4px;
-    background: var(--primary);
-    border-radius: 2px;
-    box-shadow: 0 0 6px var(--primary);
+    display: inline-block;
+    width: 0;
+    height: 0;
+    border-left: 6px solid transparent;
+    border-right: 6px solid transparent;
+    border-bottom: 10px solid var(--primary);
 }
 
 /* Drag and Drop Zone */
 .drag-drop-zone {
-    border: 2px dashed rgba(99, 102, 241, 0.3);
+    border: 1.5px dashed var(--input-border);
     border-radius: var(--radius-lg);
-    background: rgba(99, 102, 241, 0.03);
+    background: rgba(211, 47, 47, 0.02);
     padding: 20px;
     text-align: center;
     cursor: pointer;
@@ -237,14 +300,14 @@ body {
 }
 
 .drag-drop-zone:hover, .drag-drop-zone.dragover {
-    background: rgba(99, 102, 241, 0.08);
+    background: rgba(211, 47, 47, 0.04);
     border-color: var(--primary);
-    box-shadow: 0 0 16px rgba(99, 102, 241, 0.15);
+    box-shadow: 0 0 16px rgba(211, 47, 47, 0.08);
 }
 
 .upload-icon {
-    width: 36px;
-    height: 36px;
+    width: 32px;
+    height: 32px;
     color: var(--text-secondary);
     transition: var(--transition-fast);
 }
@@ -255,25 +318,21 @@ body {
 }
 
 .dropzone-text .main-text {
-    font-size: 0.95rem;
-    font-weight: 600;
+    font-size: 0.9rem;
+    font-weight: 700;
 }
 
 .dropzone-text .sub-text {
-    font-size: 0.8rem;
+    font-size: 0.75rem;
     color: var(--text-secondary);
     margin-top: 2px;
 }
 
 /* Form Styles */
 .form-grid {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
+    display: flex;
+    flex-direction: column;
     gap: 16px;
-}
-
-.span-2 {
-    grid-column: span 2;
 }
 
 .form-group {
@@ -283,19 +342,22 @@ body {
 }
 
 .form-group label {
-    font-size: 0.85rem;
-    font-weight: 600;
-    color: var(--text-secondary);
+    font-weight: 700; 
+    font-size: 11px; 
+    color: var(--text-primary);
+    opacity: 0.8;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
 }
 
 input[type="text"], input[type="number"] {
     width: 100%;
-    background: rgba(0, 0, 0, 0.3);
-    border: 1px solid rgba(255, 255, 255, 0.08);
-    border-radius: var(--radius-md);
+    background: var(--input-bg);
+    border: 1px solid var(--input-border);
+    border-radius: 8px;
     padding: 12px 14px;
     color: var(--text-primary);
-    font-size: 0.95rem;
+    font-size: 13px;
     font-weight: 500;
     outline: none;
     transition: var(--transition-fast);
@@ -303,8 +365,14 @@ input[type="text"], input[type="number"] {
 
 input[type="text"]:focus, input[type="number"]:focus {
     border-color: var(--primary);
-    background: rgba(0, 0, 0, 0.5);
+    background: var(--bg-card);
     box-shadow: 0 0 0 3px var(--primary-glow);
+}
+
+input:disabled {
+    opacity: 0.45;
+    cursor: not-allowed;
+    background: rgba(128, 128, 128, 0.05) !important;
 }
 
 /* Searchable Select Dropdown */
@@ -340,6 +408,12 @@ input[type="text"]:focus, input[type="number"]:focus {
     color: var(--text-primary);
 }
 
+@media (prefers-color-scheme: light) {
+    .dropdown-arrow-btn:hover {
+        background: rgba(0, 0, 0, 0.03);
+    }
+}
+
 .dropdown-arrow-btn svg {
     width: 16px;
     height: 16px;
@@ -355,14 +429,14 @@ input[type="text"]:focus, input[type="number"]:focus {
     top: calc(100% + 6px);
     left: 0;
     right: 0;
-    background: #111827;
-    border: 1px solid rgba(255, 255, 255, 0.1);
-    border-radius: var(--radius-md);
-    max-height: 220px;
+    background: var(--dropdown-bg);
+    border: 1px solid var(--border-color);
+    border-radius: 8px;
+    max-height: 200px;
     overflow-y: auto;
     z-index: 50;
     display: none;
-    box-shadow: 0 10px 25px -5px rgba(0,0,0,0.5);
+    box-shadow: 0 10px 25px -5px rgba(0,0,0,0.3);
 }
 
 .dropdown-list.show {
@@ -372,7 +446,7 @@ input[type="text"]:focus, input[type="number"]:focus {
 .dropdown-item {
     padding: 10px 14px;
     cursor: pointer;
-    font-size: 0.9rem;
+    font-size: 13px;
     font-weight: 500;
     color: var(--text-secondary);
     transition: var(--transition-fast);
@@ -404,79 +478,33 @@ input[type="text"]:focus, input[type="number"]:focus {
 .input-with-unit .unit {
     position: absolute;
     right: 14px;
-    font-size: 0.85rem;
-    font-weight: 600;
+    font-size: 0.8rem;
+    font-weight: 700;
     color: var(--text-secondary);
 }
 
 .input-with-unit .currency-symbol {
     position: absolute;
     left: 14px;
-    font-size: 0.95rem;
-    font-weight: 600;
+    font-size: 0.9rem;
+    font-weight: 700;
     color: var(--text-secondary);
 }
 
-.input-with-unit input[id="declaredValue"] {
-    padding-left: 35px;
-}
-
+.input-with-unit input[id="declaredValue"],
 .input-with-unit input[id="exchangeRate"] {
     padding-left: 35px;
-    padding-right: 40px;
-}
-
-.btn-fetch-rate {
-    position: absolute;
-    right: 4px;
-    top: 4px;
-    bottom: 4px;
-    width: 32px;
-    background: transparent;
-    border: none;
-    color: var(--text-secondary);
-    cursor: pointer;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    border-radius: var(--radius-sm);
-    transition: var(--transition-fast);
-}
-
-.btn-fetch-rate:hover {
-    background: rgba(255, 255, 255, 0.05);
-    color: var(--text-primary);
-}
-
-.btn-fetch-rate svg {
-    width: 16px;
-    height: 16px;
-    transition: var(--transition-fast);
-}
-
-.btn-fetch-rate:hover svg {
-    color: var(--primary);
-}
-
-.btn-fetch-rate.loading svg {
-    animation: spin-rate 1s linear infinite;
-}
-
-@keyframes spin-rate {
-    from { transform: rotate(0deg); }
-    to { transform: rotate(360deg); }
 }
 
 /* Route Info Card */
 .route-info-card {
     display: grid;
-    grid-template-columns: 1fr 1fr 1fr;
-    gap: 16px;
-    background: rgba(99, 102, 241, 0.05);
-    border: 1px dashed rgba(99, 102, 241, 0.2);
-    border-radius: var(--radius-md);
-    padding: 14px;
-    margin-top: 4px;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+    background: rgba(211, 47, 47, 0.03);
+    border: 1px dashed rgba(211, 47, 47, 0.2);
+    border-radius: 8px;
+    padding: 12px;
     animation: fadeIn 0.3s ease;
 }
 
@@ -490,32 +518,39 @@ input[type="text"]:focus, input[type="number"]:focus {
     gap: 2px;
 }
 
+.info-item:last-child {
+    grid-column: span 2;
+    border-top: 1px solid rgba(211, 47, 47, 0.08);
+    padding-top: 8px;
+    margin-top: 4px;
+}
+
 .info-label {
-    font-size: 0.75rem;
-    font-weight: 600;
+    font-size: 0.7rem;
+    font-weight: 700;
     color: var(--text-secondary);
     text-transform: uppercase;
     letter-spacing: 0.5px;
 }
 
 .info-value {
-    font-size: 1rem;
+    font-size: 0.9rem;
     font-weight: 700;
-    color: var(--accent);
+    color: var(--primary);
 }
 
 /* Dimensions Input Box */
 .dimensions-box {
-    background: rgba(255, 255, 255, 0.02);
-    border: 1px solid rgba(255, 255, 255, 0.04);
-    border-radius: var(--radius-md);
-    padding: 16px;
+    background: var(--cubing-bg);
+    border: 1px solid var(--border-color);
+    border-radius: 8px;
+    padding: 14px;
 }
 
 .dimensions-grid {
     display: grid;
     grid-template-columns: 1fr 1fr 1fr;
-    gap: 12px;
+    gap: 8px;
     margin-top: 8px;
 }
 
@@ -524,15 +559,15 @@ input[type="text"]:focus, input[type="number"]:focus {
 }
 
 .dim-input input {
-    padding-right: 38px;
+    padding-right: 32px;
 }
 
 .dim-unit {
     position: absolute;
-    right: 12px;
+    right: 10px;
     top: 50%;
     transform: translateY(-50%);
-    font-size: 0.75rem;
+    font-size: 0.7rem;
     font-weight: 600;
     color: var(--text-muted);
 }
@@ -540,15 +575,15 @@ input[type="text"]:focus, input[type="number"]:focus {
 .cubing-result {
     margin-top: 12px;
     display: flex;
-    gap: 12px;
-    font-size: 0.8rem;
+    gap: 10px;
+    font-size: 0.75rem;
     color: var(--text-secondary);
-    font-weight: 500;
+    font-weight: 600;
 }
 
 .cubing-result strong {
-    color: var(--accent);
-    font-weight: 700;
+    color: var(--primary);
+    font-weight: 800;
 }
 
 .cubing-result .divider {
@@ -562,7 +597,7 @@ input[type="text"]:focus, input[type="number"]:focus {
     align-items: center;
     cursor: pointer;
     padding: 12px 0;
-    border-bottom: 1px solid rgba(255, 255, 255, 0.04);
+    border-bottom: 1px solid var(--border-color);
 }
 
 .switch-container:last-child {
@@ -570,13 +605,13 @@ input[type="text"]:focus, input[type="number"]:focus {
 }
 
 .switch-label h3 {
-    font-size: 0.95rem;
+    font-size: 0.9rem;
     font-weight: 600;
     color: var(--text-primary);
 }
 
 .switch-label p {
-    font-size: 0.75rem;
+    font-size: 0.7rem;
     color: var(--text-secondary);
 }
 
@@ -589,18 +624,18 @@ input[type="text"]:focus, input[type="number"]:focus {
 .switch-slider {
     position: relative;
     display: inline-block;
-    width: 44px;
-    height: 24px;
-    background-color: rgba(255, 255, 255, 0.1);
-    border-radius: 24px;
+    width: 40px;
+    height: 22px;
+    background-color: var(--switch-bg);
+    border-radius: 22px;
     transition: var(--transition-fast);
 }
 
 .switch-slider::before {
     content: "";
     position: absolute;
-    height: 18px;
-    width: 18px;
+    height: 16px;
+    width: 16px;
     left: 3px;
     bottom: 3px;
     background-color: var(--text-primary);
@@ -613,7 +648,8 @@ input[type="text"]:focus, input[type="number"]:focus {
 }
 
 .switch-container input:checked + .switch-slider::before {
-    transform: translateX(20px);
+    transform: translateX(18px);
+    background-color: white;
 }
 
 /* Discount Input Box */
@@ -625,19 +661,19 @@ input[type="text"]:focus, input[type="number"]:focus {
 }
 
 .discount-label h3 {
-    font-size: 0.95rem;
+    font-size: 0.9rem;
     font-weight: 600;
 }
 
 .discount-label p {
-    font-size: 0.75rem;
+    font-size: 0.7rem;
     color: var(--text-secondary);
 }
 
 .discount-input-group {
     display: flex;
     align-items: center;
-    width: 80px;
+    width: 70px;
     position: relative;
 }
 
@@ -648,9 +684,9 @@ input[type="text"]:focus, input[type="number"]:focus {
 
 .discount-input-group .unit {
     position: absolute;
-    right: 12px;
-    font-size: 0.85rem;
-    font-weight: 600;
+    right: 10px;
+    font-size: 0.8rem;
+    font-weight: 700;
     color: var(--text-secondary);
 }
 
@@ -662,8 +698,8 @@ input[type="text"]:focus, input[type="number"]:focus {
 }
 
 .arrow-icon {
-    width: 20px;
-    height: 20px;
+    width: 16px;
+    height: 16px;
     color: var(--text-secondary);
     transition: var(--transition-normal);
 }
@@ -675,10 +711,10 @@ input[type="text"]:focus, input[type="number"]:focus {
 .bultos-content {
     margin-top: 16px;
     padding-top: 16px;
-    border-top: 1px solid rgba(255, 255, 255, 0.05);
+    border-top: 1px solid var(--border-color);
     display: flex;
     flex-direction: column;
-    gap: 14px;
+    gap: 12px;
     animation: slideDown 0.3s ease;
 }
 
@@ -687,16 +723,16 @@ input[type="text"]:focus, input[type="number"]:focus {
 }
 
 .bultos-help {
-    font-size: 0.75rem;
+    font-size: 0.7rem;
     color: var(--text-secondary);
     line-height: 1.4;
 }
 
 .bultos-list {
     display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
-    gap: 12px;
-    max-height: 180px;
+    grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
+    gap: 8px;
+    max-height: 150px;
     overflow-y: auto;
     padding-right: 4px;
 }
@@ -708,8 +744,8 @@ input[type="text"]:focus, input[type="number"]:focus {
 }
 
 .bulto-input-item span {
-    font-size: 0.7rem;
-    font-weight: 600;
+    font-size: 0.65rem;
+    font-weight: 700;
     color: var(--text-muted);
 }
 
@@ -719,42 +755,65 @@ input[type="text"]:focus, input[type="number"]:focus {
     align-items: center;
     justify-content: center;
     gap: 8px;
-    padding: 12px 24px;
-    font-size: 0.95rem;
+    padding: 12px 20px;
+    font-size: 13px;
     font-weight: 600;
-    border-radius: var(--radius-md);
+    border-radius: 8px;
     cursor: pointer;
     border: none;
-    transition: var(--transition-fast);
+    transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
     outline: none;
+    box-shadow: 0 4px 10px rgba(0,0,0,0.15);
 }
 
 .btn-sm {
-    padding: 8px 16px;
-    font-size: 0.8rem;
+    padding: 8px 12px;
+    font-size: 11px;
 }
 
 .btn-primary {
-    background: var(--primary);
+    background: linear-gradient(135deg, var(--primary) 0%, #f43f5e 100%);
     color: white;
-    box-shadow: 0 4px 14px 0 rgba(99, 102, 241, 0.3);
+    box-shadow: 0 4px 14px rgba(211, 47, 47, 0.2), 0 2px 4px rgba(0, 0, 0, 0.1) !important;
 }
 
 .btn-primary:hover {
-    background: var(--primary-hover);
-    transform: translateY(-1px);
-    box-shadow: 0 6px 20px 0 rgba(99, 102, 241, 0.4);
+    background: linear-gradient(135deg, var(--primary-hover) 0%, #e11d48 100%);
+    box-shadow: 0 6px 20px rgba(211, 47, 47, 0.3), 0 4px 8px rgba(0, 0, 0, 0.1) !important;
+    transform: translateY(-2px);
+}
+
+.btn-primary:active {
+    transform: translateY(0) scale(0.98);
 }
 
 .btn-secondary {
-    background: rgba(255, 255, 255, 0.06);
+    background: rgba(255, 255, 255, 0.04);
     color: var(--text-primary);
-    border: 1px solid rgba(255, 255, 255, 0.08);
+    border: 1px solid var(--border-color);
+    box-shadow: none;
 }
 
 .btn-secondary:hover {
-    background: rgba(255, 255, 255, 0.1);
-    border-color: rgba(255, 255, 255, 0.2);
+    background: rgba(255, 255, 255, 0.08);
+    border-color: rgba(255, 255, 255, 0.15);
+    transform: translateY(-1px);
+}
+
+.btn-secondary:active {
+    transform: translateY(0) scale(0.98);
+}
+
+@media (prefers-color-scheme: light) {
+    .btn-secondary {
+        background: rgba(15, 23, 42, 0.03);
+        border-color: rgba(15, 23, 42, 0.08);
+        color: #475569;
+    }
+    .btn-secondary:hover {
+        background: rgba(15, 23, 42, 0.06);
+        color: #0f172a;
+    }
 }
 
 /* Results panel header */
@@ -766,12 +825,12 @@ input[type="text"]:focus, input[type="number"]:focus {
 }
 
 .results-header h2 {
-    font-size: 1.3rem;
-    font-weight: 800;
+    font-size: 1.25rem;
+    font-weight: 700;
 }
 
 .results-header .sub-title {
-    font-size: 0.8rem;
+    font-size: 0.75rem;
     color: var(--text-secondary);
 }
 
@@ -790,8 +849,8 @@ input[type="text"]:focus, input[type="number"]:focus {
 
 .matrix-card {
     background: var(--bg-card);
-    backdrop-filter: blur(12px);
-    -webkit-backdrop-filter: blur(12px);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
     border: 1px solid var(--border-color);
     border-radius: var(--radius-lg);
     padding: 20px;
@@ -817,24 +876,30 @@ input[type="text"]:focus, input[type="number"]:focus {
 
 .matrix-card:hover {
     transform: translateY(-2px);
-    background: rgba(22, 28, 45, 0.8);
-    border-color: rgba(255, 255, 255, 0.15);
+    background: rgba(22, 28, 45, 0.4);
+    border-color: rgba(255, 255, 255, 0.1);
+}
+
+@media (prefers-color-scheme: light) {
+    .matrix-card:hover {
+        background: rgba(255, 255, 255, 0.95);
+    }
 }
 
 .matrix-card.active {
-    background: rgba(99, 102, 241, 0.06);
-    border-color: rgba(99, 102, 241, 0.2);
+    background: rgba(211, 47, 47, 0.04);
+    border-color: rgba(211, 47, 47, 0.2);
 }
 
 .matrix-card.active::after {
     border-color: var(--primary);
-    box-shadow: inset 0 0 10px rgba(99, 102, 241, 0.1);
+    box-shadow: inset 0 0 10px rgba(211, 47, 47, 0.05);
 }
 
 .badge-tag {
     align-self: flex-start;
     padding: 4px 8px;
-    font-size: 0.65rem;
+    font-size: 0.6rem;
     font-weight: 700;
     letter-spacing: 0.5px;
     border-radius: 4px;
@@ -842,19 +907,19 @@ input[type="text"]:focus, input[type="number"]:focus {
 }
 
 .tag-origen {
-    background: rgba(14, 165, 233, 0.15);
-    color: var(--accent);
-    border: 1px solid rgba(14, 165, 233, 0.2);
+    background: rgba(211, 47, 47, 0.1);
+    color: var(--primary);
+    border: 1px solid rgba(211, 47, 47, 0.15);
 }
 
 .tag-destino {
-    background: rgba(245, 158, 11, 0.15);
+    background: rgba(245, 158, 11, 0.1);
     color: var(--warning);
-    border: 1px solid rgba(245, 158, 11, 0.2);
+    border: 1px solid rgba(245, 158, 11, 0.15);
 }
 
 .matrix-card .card-title {
-    font-size: 0.95rem;
+    font-size: 0.9rem;
     font-weight: 600;
     color: var(--text-secondary);
 }
@@ -870,32 +935,32 @@ input[type="text"]:focus, input[type="number"]:focus {
 }
 
 .matrix-card .price-usd {
-    font-size: 1.8rem;
+    font-size: 1.7rem;
     font-weight: 800;
     line-height: 1.1;
     color: var(--text-primary);
 }
 
 .matrix-card.active .price-usd {
-    color: white;
-    text-shadow: 0 0 15px rgba(99, 102, 241, 0.4);
+    color: var(--text-primary);
+    text-shadow: 0 0 10px rgba(211, 47, 47, 0.2);
 }
 
 .matrix-card .price-bs {
-    font-size: 0.95rem;
-    font-weight: 600;
+    font-size: 0.9rem;
+    font-weight: 700;
     color: var(--text-secondary);
 }
 
 .matrix-card.active .price-bs {
-    color: var(--accent);
+    color: var(--primary);
 }
 
 .matrix-card .card-footer-info {
     font-size: 0.7rem;
     color: var(--text-muted);
     margin-top: auto;
-    border-top: 1px solid rgba(255, 255, 255, 0.04);
+    border-top: 1px solid var(--border-color);
     padding-top: 8px;
 }
 
@@ -939,7 +1004,7 @@ input[type="text"]:focus, input[type="number"]:focus {
 
 .receipt-badge {
     padding: 4px 10px;
-    font-size: 0.7rem;
+    font-size: 0.65rem;
     font-weight: 700;
     background: var(--primary);
     color: white;
@@ -949,7 +1014,7 @@ input[type="text"]:focus, input[type="number"]:focus {
 }
 
 .receipt-header h3 {
-    font-size: 1.15rem;
+    font-size: 1.1rem;
     font-weight: 700;
     color: var(--receipt-text);
 }
@@ -957,7 +1022,7 @@ input[type="text"]:focus, input[type="number"]:focus {
 .receipt-meta {
     display: flex;
     justify-content: space-between;
-    font-size: 0.78rem;
+    font-size: 0.75rem;
     color: var(--text-secondary);
 }
 
@@ -970,7 +1035,7 @@ input[type="text"]:focus, input[type="number"]:focus {
 }
 
 .receipt-section h4 {
-    font-size: 0.8rem;
+    font-size: 0.75rem;
     font-weight: 700;
     color: var(--text-muted);
     text-transform: uppercase;
@@ -982,12 +1047,12 @@ input[type="text"]:focus, input[type="number"]:focus {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    font-size: 0.9rem;
+    font-size: 0.85rem;
     color: var(--text-secondary);
 }
 
 .receipt-item .value {
-    font-weight: 600;
+    font-weight: 700;
     color: var(--receipt-text);
 }
 
@@ -1012,10 +1077,17 @@ input[type="text"]:focus, input[type="number"]:focus {
     display: flex;
     flex-direction: column;
     gap: 8px;
-    background: rgba(0, 0, 0, 0.2);
+    background: rgba(0, 0, 0, 0.25);
     border-radius: var(--radius-md);
     padding: 16px;
     border: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+@media (prefers-color-scheme: light) {
+    .receipt-total-block {
+        background: rgba(0, 0, 0, 0.03);
+        border: 1px solid rgba(0, 0, 0, 0.06);
+    }
 }
 
 .total-row {
@@ -1025,25 +1097,25 @@ input[type="text"]:focus, input[type="number"]:focus {
 }
 
 .total-label {
-    font-size: 0.9rem;
+    font-size: 0.85rem;
     font-weight: 700;
     color: var(--text-secondary);
 }
 
 .total-value.usd {
-    font-size: 1.7rem;
+    font-size: 1.6rem;
     font-weight: 800;
-    color: white;
+    color: var(--receipt-text);
 }
 
 .total-value.bs {
-    font-size: 1.25rem;
+    font-size: 1.2rem;
     font-weight: 700;
-    color: var(--accent);
+    color: var(--primary);
 }
 
 .bs-row {
-    border-top: 1px dashed rgba(255, 255, 255, 0.08);
+    border-top: 1px dashed var(--receipt-line);
     padding-top: 8px;
     margin-top: 4px;
 }
@@ -1056,8 +1128,8 @@ input[type="text"]:focus, input[type="number"]:focus {
 }
 
 .receipt-actions button svg {
-    width: 18px;
-    height: 18px;
+    width: 16px;
+    height: 16px;
 }
 
 /* Toast Notification */
@@ -1066,15 +1138,15 @@ input[type="text"]:focus, input[type="number"]:focus {
     bottom: 24px;
     left: 50%;
     transform: translateX(-50%) translateY(0);
-    background: #1e293b;
-    border: 1px solid rgba(255, 255, 255, 0.1);
-    color: white;
+    background: var(--receipt-bg);
+    border: 1px solid var(--border-color);
+    color: var(--text-primary);
     padding: 12px 24px;
     border-radius: var(--radius-md);
-    box-shadow: 0 10px 15px -3px rgba(0,0,0,0.5);
+    box-shadow: 0 10px 15px -3px rgba(0,0,0,0.3);
     z-index: 100;
     font-weight: 600;
-    font-size: 0.9rem;
+    font-size: 0.85rem;
     display: flex;
     align-items: center;
     gap: 8px;
@@ -1091,7 +1163,7 @@ input[type="text"]:focus, input[type="number"]:focus {
 /* Animations */
 @keyframes pulse {
     0% { transform: scale(1); opacity: 0.6; }
-    50% { transform: scale(1.15); opacity: 1; }
+    50% { transform: scale(1.1); opacity: 1; }
     100% { transform: scale(1); opacity: 0.6; }
 }
 
@@ -1102,7 +1174,7 @@ input[type="text"]:focus, input[type="number"]:focus {
 
 @keyframes slideDown {
     from { opacity: 0; max-height: 0; overflow: hidden; }
-    to { opacity: 1; max-height: 500px; }
+    to { opacity: 1; max-height: 400px; }
 }
 
 /* Print Styles */
