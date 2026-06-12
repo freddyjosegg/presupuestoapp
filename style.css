@@ -256,7 +256,7 @@ h1, h2, h3, h4, .logo-text h1, .card-header h2, .receipt-header h3, .total-label
 @media (min-width: 1025px) {
     .app-workspace {
         display: grid;
-        grid-template-columns: 320px 1fr;
+        grid-template-columns: 390px 1fr;
         gap: 32px;
         align-items: start;
     }
@@ -551,9 +551,58 @@ input:disabled {
     color: var(--text-secondary);
 }
 
-.input-with-unit input[id="declaredValue"],
-.input-with-unit input[id="exchangeRate"] {
+.input-with-unit input[id="declaredValue"] {
     padding-left: 35px;
+}
+
+.input-with-unit input[id="exchangeRate"] {
+    padding-left: 45px;
+    padding-right: 45px;
+}
+
+/* Rate fetching button styles */
+.btn-fetch-rate {
+    position: absolute;
+    right: 8px;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 32px;
+    height: 32px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: transparent;
+    border: none;
+    border-radius: 50%;
+    color: var(--text-secondary);
+    cursor: pointer;
+    transition: all 0.2s ease;
+    padding: 6px;
+    z-index: 5;
+}
+
+.btn-fetch-rate:hover {
+    color: var(--primary);
+    background: rgba(211, 47, 47, 0.1);
+}
+
+.btn-fetch-rate:active {
+    transform: translateY(-50%) scale(0.9);
+}
+
+.btn-fetch-rate svg {
+    width: 18px;
+    height: 18px;
+    transition: transform 0.2s ease;
+}
+
+.btn-fetch-rate.loading svg {
+    animation: spin-rate 1s linear infinite;
+}
+
+@keyframes spin-rate {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
 }
 
 /* Route Info Card */

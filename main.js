@@ -691,11 +691,17 @@ function calculateAll() {
     const alto = parseFloat(dimAlto.value) || 0;
     const volWeight = (largo * ancho * alto) / 5000;
     
-    valCubaje.textContent = volWeight.toFixed(2);
+    valCubaje.textContent = volWeight.toLocaleString('es-VE', { minimumFractionDigits: 0, maximumFractionDigits: 2 });
     
     // Max weight
     const finalWeight = Math.max(physWeight, volWeight);
-    valPesoFinal.textContent = finalWeight.toFixed(3);
+    valPesoFinal.textContent = finalWeight.toLocaleString('es-VE', { minimumFractionDigits: 0, maximumFractionDigits: 3 });
+    
+    // Si no hay peso ingresado (peso final es 0 o menor), limpiar los precios pero mantener la tarjeta de ruta visible
+    if (finalWeight <= 0) {
+        clearMatrixPrices(false);
+        return;
+    }
     
     // Ensure bultos list is populated
     if (appState.bultos.length !== bCount) {
@@ -838,8 +844,10 @@ function runScenario(tariffType, isCOD, weight, escala, declaredVal, discPercent
 }
 
 // Clear prices from the matrix and receipt
-function clearMatrixPrices() {
-    routeInfoCard.classList.add('hidden');
+function clearMatrixPrices(hideRouteCard = true) {
+    if (hideRouteCard) {
+        routeInfoCard.classList.add('hidden');
+    }
     Object.keys(matrixCards).forEach(opt => {
         document.getElementById(`matrixUSD_${opt}`).textContent = '$0.00';
         document.getElementById(`matrixBs_${opt}`).textContent = 'Bs. 0.00';
@@ -954,7 +962,7 @@ function copySummaryToClipboard() {
     let text = `=== PRESUPUESTO DE FLETE ===\n`;
     text += `Escenario: ${scenarioName}\n`;
     text += `Ruta: ${originName} → ${destName}\n`;
-    text += `Escala: ${res.escala} | Peso Cálculo: ${res.weight.toFixed(3)} kg\n`;
+    text += `Escala: ${res.escala} | Peso Cálculo: ${res.weight.toLocaleString('es-VE', { minimumFractionDigits: 0, maximumFractionDigits: 3 })} kg\n`;
     text += `-----------------------------------\n`;
     text += `Flete Base: $${res.baseFreight.toFixed(2)}\n`;
     if (res.discountVal > 0) {
