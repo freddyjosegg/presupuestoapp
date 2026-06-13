@@ -905,7 +905,7 @@ function clearMatrixPrices(hideRouteCard = true) {
     document.getElementById('itemSubtotalUSD').textContent = '$0.00';
     document.getElementById('itemIvaUSD').textContent = '$0.00';
     document.getElementById('itemFranqueoUSD').textContent = '$0.00';
-    document.getElementById('itemFranqueoRow').classList.add('hidden');
+    document.getElementById('itemFranqueoRow').classList.remove('hidden');
     document.getElementById('itemIgtfUSD').textContent = '$0.00';
     document.getElementById('itemTotalUSD').innerHTML = `$0.00<span class="igtf-subtext">($0.00 con IGTF)</span>`;
     document.getElementById('itemTotalBs').textContent = 'Bs. 0,00';
