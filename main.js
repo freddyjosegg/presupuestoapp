@@ -12,6 +12,31 @@ function roundHalfUp(val, decimals = 2) {
     return (Math.round((val + 1e-9) * factor) / factor).toFixed(decimals);
 }
 
+function roundHalfUpNum(val, decimals = 2) {
+    if (val === undefined || val === null || isNaN(val)) {
+        return 0;
+    }
+    const factor = Math.pow(10, decimals);
+    return Math.round((val + 1e-9) * factor) / factor;
+}
+
+function truncDec(val, decimals = 3) {
+    if (val === undefined || val === null || isNaN(val)) {
+        return 0;
+    }
+    const factor = Math.pow(10, decimals);
+    return Math.floor((val + 1e-9) * factor) / factor;
+}
+
+function roundUpDec(val, decimals = 3) {
+    if (val === undefined || val === null || isNaN(val)) {
+        return 0;
+    }
+    const factor = Math.pow(10, decimals);
+    return Math.ceil((val - 1e-9) * factor) / factor;
+}
+
+
 // Utility: Format Bs. with point as thousands separator and comma for decimals
 function formatBs(value) {
     if (value === undefined || value === null || isNaN(value)) {
@@ -808,7 +833,7 @@ function runScenario(tariffType, isCOD, weight, escala, declaredVal, discPercent
     // 2. Discount
     const hasDiscount = discPercent > 0;
     const discountVal = hasDiscount ? baseFreight * (discPercent / 100) : 0;
-    const netFreight = Math.ceil((baseFreight - discountVal) * 1000) / 1000; // ROUNDUP 3 decs
+    const netFreight = roundUpDec(baseFreight - discountVal, 3); // ROUNDUP 3 decs
     
     // 3. TDG (Tramite de guia): if weight > 160kg, apply tdgBase
     const applyTdg = weight > 160;
@@ -832,7 +857,7 @@ function runScenario(tariffType, isCOD, weight, escala, declaredVal, discPercent
         } else {
             seguroVal = declaredVal * (appState.constants.seguroRate / 100); // 3.2%
         }
-        seguroVal = Math.ceil(seguroVal * 1000) / 1000; // ROUNDUP 3 decs
+        seguroVal = roundUpDec(seguroVal, 3); // ROUNDUP 3 decs
     }
     
     // 7. Contenedor: 10% of Base Freight
@@ -843,7 +868,7 @@ function runScenario(tariffType, isCOD, weight, escala, declaredVal, discPercent
     
     // 9. IVA (16%)
     // Excel: TRUNC(subtotal * 0.16, 3)
-    const ivaVal = Math.floor((subtotal * 0.16) * 1000) / 1000;
+    const ivaVal = truncDec(subtotal * 0.16, 3);
     
     // 10. Franqueo Postal (IPOSTEL 10%)
     // Only applies to individual bultos <= 30 kg
@@ -861,12 +886,15 @@ function runScenario(tariffType, isCOD, weight, escala, declaredVal, discPercent
                 sumFranqueo += propBaseFreight * 0.1;
             }
         });
-        franqueoVal = Math.ceil(sumFranqueo * 1000) / 1000; // ROUNDUP 3 decs
+        franqueoVal = roundUpDec(sumFranqueo, 3); // ROUNDUP 3 decs
     }
     
     // 11. IGTF (3%)
     // Base is: Subtotal + IVA + Franqueo
-    const igtfBase = subtotal + ivaVal + franqueoVal;
+    // Redondeamos la base en USD a 2 decimales para que coincida con el total en USD visualizado por el usuario
+    const rawIgtfBase = subtotal + ivaVal + franqueoVal;
+    const igtfBase = roundHalfUpNum(rawIgtfBase, 2);
+    
     const igtfVal = igtfBase * 0.03;
     
     // 12. Total USD
@@ -874,7 +902,8 @@ function runScenario(tariffType, isCOD, weight, escala, declaredVal, discPercent
     
     // 13. Total Bs
     // El IGTF solo aplica para pagos en divisas, por lo que el total en bolívares lo excluye.
-    const totalBs = Math.floor((igtfBase * exRate) * 100) / 100;
+    // Usamos el igtfBase ya redondeado (que representa el total en USD sin IGTF)
+    const totalBs = truncDec(igtfBase * exRate, 2);
     
     return {
         baseFreight,
