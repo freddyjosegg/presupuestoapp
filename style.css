@@ -1007,6 +1007,12 @@ input:disabled {
     }
 }
 
+@media (min-width: 1025px) {
+    .matrix-grid {
+        grid-template-columns: repeat(4, 1fr);
+    }
+}
+
 .matrix-card {
     background: var(--bg-card);
     backdrop-filter: blur(20px);
