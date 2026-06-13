@@ -1116,10 +1116,11 @@ input:disabled {
 }
 
 .total-row .igtf-subtext {
-    display: inline-block;
+    display: block;
     font-size: 0.8rem;
     font-weight: 500;
-    margin-left: 8px;
+    margin-top: 4px;
+    margin-left: 0;
     color: var(--text-muted);
 }
 
@@ -1266,19 +1267,23 @@ input:disabled {
 .total-row {
     display: flex;
     justify-content: space-between;
-    align-items: center;
+    align-items: flex-start;
 }
 
 .total-label {
     font-size: 0.8rem;
     font-weight: 700;
     color: var(--text-secondary);
+    margin-top: 4px; /* Pequeño ajuste para alinear con el texto del valor */
 }
 
 .total-value.usd {
     font-size: 1.4rem;
     font-weight: 800;
     color: var(--receipt-text);
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
 }
 
 @media (min-width: 768px) {
