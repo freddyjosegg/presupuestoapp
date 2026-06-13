@@ -919,7 +919,9 @@ function clearMatrixPrices(hideRouteCard = true) {
     document.getElementById('itemIgtfUSD').textContent = '$0.00';
     document.getElementById('itemTotalUSD').innerHTML = `$0.00<span class="igtf-subtext">($0.00 con IGTF)</span>`;
     document.getElementById('itemTotalBs').textContent = 'Bs. 0,00';
-    document.getElementById('receiptRoute').textContent = 'Ruta: -';
+    document.getElementById('receiptRoute').textContent = '-';
+    document.getElementById('receiptTitle').textContent = '-';
+    document.getElementById('receiptBadge').textContent = '-';
     document.getElementById('printNoteDate').textContent = '-';
 }
 
@@ -940,18 +942,18 @@ function renderDetailedReceipt() {
     
     const originName = originInput.value.split('(')[0].trim();
     const destName = destinationInput.value.split('(')[0].trim();
-    route.textContent = `Ruta: ${originName} → ${destName} (${res.escala})`;
+    route.textContent = `${originName} → ${destName} (${res.escala})`;
     
     if (opt.startsWith('orig')) {
-        badge.innerHTML = 'Pago: <strong class="text-origen">Pago en Origen</strong>';
+        badge.innerHTML = '<span class="text-origen">Pago en Origen</span>';
     } else {
-        badge.innerHTML = 'Pago: <strong class="text-destino">Cobro en Destino</strong>';
+        badge.innerHTML = '<span class="text-destino">Cobro en Destino</span>';
     }
     
     if (opt.endsWith('Dir')) {
-        title.textContent = 'Presupuesto: Entrega a Dirección';
+        title.textContent = 'Entrega a Dirección';
     } else {
-        title.textContent = 'Presupuesto: Retiro en Agencia';
+        title.textContent = 'Retiro en Agencia';
     }
     
     // 2. Line Items

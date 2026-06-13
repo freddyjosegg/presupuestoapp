@@ -298,15 +298,22 @@
                 <!-- Selected Scenario Invoice Breakdown (Receipt View) -->
                 <div class="receipt-card" id="receipt">
                     <div class="receipt-header">
-                        <h3 id="receiptTitle">Presupuesto: Entrega a Dirección</h3>
-                        <div class="receipt-meta">
-                            <div class="meta-row">
-                                <span id="receiptBadge">Pago: Pago en Origen</span>
-                                <span id="receiptDate">Fecha: 12/06/2026</span>
+                        <div class="receipt-title-row">
+                            <h2 class="receipt-main-title">Presupuesto de Flete</h2>
+                            <span id="receiptDate" class="receipt-date">Fecha: 12/06/2026</span>
+                        </div>
+                        <div class="receipt-meta-grid">
+                            <div class="meta-col">
+                                <span class="meta-label">Ruta</span>
+                                <span id="receiptRoute" class="meta-val">-</span>
                             </div>
-                            <div class="meta-row">
-                                <span></span>
-                                <span id="receiptRoute">Ruta: -</span>
+                            <div class="meta-col">
+                                <span class="meta-label">Servicio</span>
+                                <span id="receiptTitle" class="meta-val">Entrega a Dirección</span>
+                            </div>
+                            <div class="meta-col">
+                                <span class="meta-label">Condición de Pago</span>
+                                <span id="receiptBadge" class="meta-val">Pago en Origen</span>
                             </div>
                         </div>
                     </div>
