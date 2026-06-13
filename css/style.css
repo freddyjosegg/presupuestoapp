@@ -1174,7 +1174,50 @@ input:disabled {
     padding-top: 8px;
 }
 
-/* Receipt Details (Thermal Invoice Card) */
+/* Card share button */
+.card-share-btn {
+    position: absolute;
+    top: 8px;
+    right: 8px;
+    z-index: 10;
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid var(--border-color);
+    color: var(--text-secondary);
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+    backdrop-filter: blur(4px);
+    -webkit-backdrop-filter: blur(4px);
+}
+
+.card-share-btn svg {
+    width: 14px;
+    height: 14px;
+}
+
+.card-share-btn:hover {
+    background: var(--primary);
+    border-color: var(--primary);
+    color: white;
+    transform: scale(1.1);
+    box-shadow: 0 4px 10px rgba(211, 47, 47, 0.25);
+}
+
+.card-share-btn:active {
+    transform: scale(0.95);
+}
+
+@media (prefers-color-scheme: light) {
+    .card-share-btn {
+        background: rgba(0, 0, 0, 0.03);
+    }
+}
+
 .receipt-card {
     background: var(--receipt-bg);
     border-radius: var(--radius-lg);

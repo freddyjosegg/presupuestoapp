@@ -252,6 +252,9 @@
                 <div class="matrix-grid">
                     <!-- Option 1: Origen + Dirección -->
                     <div class="matrix-card active" id="cardOrigDir" data-option="origDir">
+                        <button class="card-share-btn" title="Compartir este presupuesto" aria-label="Compartir este presupuesto">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="18" cy="5" r="3"></circle><circle cx="6" cy="12" r="3"></circle><circle cx="18" cy="19" r="3"></circle><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"></line><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"></line></svg>
+                        </button>
                         <div class="badge-tag tag-origen">PAGO EN ORIGEN</div>
                         <div class="card-title">Entrega a Dirección</div>
                         <div class="price-container">
@@ -263,6 +266,9 @@
 
                     <!-- Option 2: Origen + Agencia -->
                     <div class="matrix-card" id="cardOrigAge" data-option="origAge">
+                        <button class="card-share-btn" title="Compartir este presupuesto" aria-label="Compartir este presupuesto">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="18" cy="5" r="3"></circle><circle cx="6" cy="12" r="3"></circle><circle cx="18" cy="19" r="3"></circle><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"></line><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"></line></svg>
+                        </button>
                         <div class="badge-tag tag-origen">PAGO EN ORIGEN</div>
                         <div class="card-title">Retiro en Agencia</div>
                         <div class="price-container">
@@ -274,6 +280,9 @@
 
                     <!-- Option 3: Destino (COD) + Dirección -->
                     <div class="matrix-card" id="cardDestDir" data-option="destDir">
+                        <button class="card-share-btn" title="Compartir este presupuesto" aria-label="Compartir este presupuesto">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="18" cy="5" r="3"></circle><circle cx="6" cy="12" r="3"></circle><circle cx="18" cy="19" r="3"></circle><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"></line><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"></line></svg>
+                        </button>
                         <div class="badge-tag tag-destino">COBRO EN DESTINO</div>
                         <div class="card-title">Entrega a Dirección</div>
                         <div class="price-container">
@@ -285,6 +294,9 @@
 
                     <!-- Option 4: Destino (COD) + Agencia -->
                     <div class="matrix-card" id="cardDestAge" data-option="destAge">
+                        <button class="card-share-btn" title="Compartir este presupuesto" aria-label="Compartir este presupuesto">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="18" cy="5" r="3"></circle><circle cx="6" cy="12" r="3"></circle><circle cx="18" cy="19" r="3"></circle><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"></line><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"></line></svg>
+                        </button>
                         <div class="badge-tag tag-destino">COBRO EN DESTINO</div>
                         <div class="card-title">Retiro en Agencia</div>
                         <div class="price-container">
@@ -409,9 +421,9 @@
                             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z" /></svg>
                             Imprimir Presupuesto
                         </button>
-                        <button class="btn btn-primary" id="btnCopy">
-                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M8 5H6a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2v-1M8 5a2 2 0 002 2h2a2 2 0 002-2M8 5a2 2 0 012-2h2a2 2 0 012 2m0 0h2a2 2 0 012 2v3m2 4H10m0 0l3-3m-3 3l3 3" /></svg>
-                            Copiar Resumen
+                        <button class="btn btn-primary" id="btnShare">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 12v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8"></path><polyline points="16 6 12 2 8 6"></polyline><line x1="12" y1="2" x2="12" y2="15"></line></svg>
+                            Compartir Presupuesto
                         </button>
                     </div>
                 </div>

@@ -105,7 +105,7 @@ const bultosContent = document.getElementById('bultosContent');
 const bultosInputsContainer = document.getElementById('bultosInputsContainer');
 const btnSyncBultos = document.getElementById('btnSyncBultos');
 const btnPrint = document.getElementById('btnPrint');
-const btnCopy = document.getElementById('btnCopy');
+const btnShare = document.getElementById('btnShare');
 const btnFetchRate = document.getElementById('btnFetchRate');
 const toast = document.getElementById('toast');
 
@@ -559,6 +559,15 @@ function setupEventListeners() {
             appState.selectedOption = opt;
             renderDetailedReceipt();
         });
+        
+        // Setup share button inside this card
+        const shareBtn = matrixCards[opt].querySelector('.card-share-btn');
+        if (shareBtn) {
+            shareBtn.addEventListener('click', (e) => {
+                e.stopPropagation(); // Prevent selecting/activating the card when clicking share
+                shareBudget(opt);
+            });
+        }
     });
     
     // Accordion toggle for bultos
@@ -588,8 +597,10 @@ function setupEventListeners() {
         window.print();
     });
     
-    // Copy summary
-    btnCopy.addEventListener('click', copySummaryToClipboard);
+    // Share budget
+    if (btnShare) {
+        btnShare.addEventListener('click', () => shareBudget(appState.selectedOption));
+    }
     
     // Fetch rate button
     if (btnFetchRate) {
@@ -1051,10 +1062,9 @@ function toggleReceiptRow(rowId, valId, value) {
     }
 }
 
-// Copy Text Summary to Clipboard
-function copySummaryToClipboard() {
-    const opt = appState.selectedOption;
-    if (!appState.calculations || !appState.calculations[opt]) return;
+// Get formatted Text Summary for sharing
+function getSummaryText(opt) {
+    if (!appState.calculations || !appState.calculations[opt]) return '';
     
     const res = appState.calculations[opt];
     const originName = originInput.value;
@@ -1090,13 +1100,57 @@ function copySummaryToClipboard() {
     text += `TOTAL (Bs.): Bs. ${formatBs(res.totalBs)}\n`;
     text += `Tasa de cambio: Bs. ${formatBs(res.exRate)}/$\n`;
     text += `Generado por PresupuestoApp`;
-    
-    navigator.clipboard.writeText(text).then(() => {
-        showToast('Resumen copiado al portapapeles');
-    }).catch(err => {
-        console.error('Failed to copy summary:', err);
+    return text;
+}
+
+// Copy to clipboard fallback for non-secure HTTP contexts
+function copyToClipboardFallback(text) {
+    try {
+        const textarea = document.createElement('textarea');
+        textarea.value = text;
+        // Prevent scrolling and render offscreen
+        textarea.style.position = 'fixed';
+        textarea.style.top = '-9999px';
+        textarea.style.left = '-9999px';
+        document.body.appendChild(textarea);
+        textarea.focus();
+        textarea.select();
+        
+        const successful = document.execCommand('copy');
+        document.body.removeChild(textarea);
+        
+        if (successful) {
+            showToast('Resumen copiado al portapapeles');
+        } else {
+            showToast('Error al copiar el resumen', 'error');
+        }
+    } catch (err) {
+        console.error('Fallback copy failed:', err);
         showToast('Error al copiar el resumen', 'error');
-    });
+    }
+}
+
+// Share Budget using Web Share API or Clipboard Fallback
+function shareBudget(option) {
+    const text = getSummaryText(option);
+    if (!text) return;
+    
+    if (navigator.share) {
+        navigator.share({
+            title: 'Presupuesto de Flete',
+            text: text
+        }).then(() => {
+            showToast('Presupuesto compartido con éxito');
+        }).catch(err => {
+            // Share canceled by user, do nothing or fallback if it is a real error
+            if (err.name !== 'AbortError') {
+                console.error('Share failed:', err);
+                copyToClipboardFallback(text);
+            }
+        });
+    } else {
+        copyToClipboardFallback(text);
+    }
 }
 
 // Helper: Show Toast Notification
