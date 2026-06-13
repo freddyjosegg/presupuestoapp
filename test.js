@@ -132,25 +132,66 @@ const path = require('path');
         console.log(`TOTAL Bs: ${receiptTotalBs}`);
         console.log('===============================================\n');
 
-        // Validaciones: El total en Bs. debe ser (Subtotal + IVA + Franqueo) * exRate, es decir, sin IGTF
-        const rateVal = parseFloat(await page.$eval('#exchangeRate', el => el.value));
+        // Validaciones: El total en Bs. debe coincidir con la fórmula de Excel de conversión y redondeo por componentes
+        const roundUpDec = (val, decimals = 3) => {
+            const factor = Math.pow(10, decimals);
+            return Math.ceil((val - 1e-9) * factor) / factor;
+        };
+        const roundHalfUpNum = (val, decimals = 2) => {
+            const factor = Math.pow(10, decimals);
+            return Math.round((val + 1e-9) * factor) / factor;
+        };
+
+        const getVal = async (selector) => {
+            const el = await page.$(selector);
+            if (!el) return 0;
+            const isHidden = await page.evaluate(element => element.closest('.hidden') !== null, el);
+            if (isHidden) return 0;
+            const text = await page.evaluate(element => element.textContent || element.value || '0', el);
+            const match = text.match(/\$?([0-9.,\-]+)/);
+            if (!match || text.includes('-') && !text.includes('$')) return 0; // handle negative or dashed display
+            return parseFloat(match[1].replace(/,/g, ''));
+        };
+
+        const rateVal = await getVal('#exchangeRate');
+        const netFreight = await getVal('#itemNetUSD') || await getVal('#itemBaseUSD');
+        const tdg = await getVal('#itemTdgUSD');
+        const gcd = await getVal('#itemGcdUSD');
+        const car = await getVal('#itemCarUSD');
+        const carf = await getVal('#itemCarfUSD');
+        const seguro = await getVal('#itemSeguroUSD');
+        const contenedor = await getVal('#itemContenedorUSD');
+        const truncDec = (val, decimals = 3) => {
+            const factor = Math.pow(10, decimals);
+            return Math.floor((val + 1e-9) * factor) / factor;
+        };
+
+        const subtotal = netFreight + tdg + gcd + car + carf + seguro + contenedor;
+        const iva = truncDec(subtotal * 0.16, 3);
+        const franqueo = await getVal('#itemFranqueoUSD');
+
+        // Excel component-rounding formula
+        const fleteBs = roundUpDec(netFreight * rateVal, 3);
+        const compBs = roundUpDec((tdg + gcd + car + carf + seguro + contenedor) * rateVal, 3);
+        const taxBs = roundUpDec((iva + franqueo) * rateVal, 3);
+        
+        const expectedBsRaw = roundUpDec(fleteBs + compBs + taxBs, 3);
+        const expectedBs = roundHalfUpNum(expectedBsRaw, 2);
+
         const cleanBs = receiptTotalBs.replace('Bs. ', '').replace(/\./g, '').replace(',', '.');
         const totalBsNum = parseFloat(cleanBs);
-        
-        const matchUSD = receiptTotalUSD.match(/\$([0-9.]+)/);
-        const totalUSDNum = matchUSD ? parseFloat(matchUSD[1]) : 0;
-        
-        const igtfNum = parseFloat(itemIgtf.replace('$', '').replace(',', ''));
-        
-        const expectedBs = totalUSDNum * rateVal;
+
         console.log(`Tasa de cambio: ${rateVal}`);
+        console.log(`Flete en Bs (Excel): ${fleteBs.toFixed(3)}`);
+        console.log(`Comp. en Bs (Excel): ${compBs.toFixed(3)}`);
+        console.log(`Impuestos en Bs (Excel): ${taxBs.toFixed(3)}`);
         console.log(`Total Bs en pantalla: ${totalBsNum}`);
-        console.log(`Total Bs esperado (Base Imponible * Tasa): ${expectedBs.toFixed(2)}`);
+        console.log(`Total Bs esperado (Fórmula Excel): ${expectedBs.toFixed(2)}`);
 
         if (Math.abs(totalBsNum - expectedBs) > 0.05) {
-            throw new Error(`¡El total en bolívares no excluye correctamente el IGTF! Esperado: ${expectedBs.toFixed(2)}, Obtenido: ${totalBsNum}`);
+            throw new Error(`¡El total en bolívares no coincide con la fórmula de Excel! Esperado: ${expectedBs.toFixed(2)}, Obtenido: ${totalBsNum}`);
         } else {
-            console.log('✅ VALIDACIÓN EXITOSA: El total en Bolívares excluye correctamente el impuesto IGTF.');
+            console.log('✅ VALIDACIÓN EXITOSA: El total en Bolívares coincide exactamente con la fórmula de Excel.');
         }
 
         console.log('Prueba automatizada finalizada con éxito.');

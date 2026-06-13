@@ -901,9 +901,18 @@ function runScenario(tariffType, isCOD, weight, escala, declaredVal, discPercent
     const totalUSD = igtfBase + igtfVal;
     
     // 13. Total Bs
-    // El IGTF solo aplica para pagos en divisas, por lo que el total en bolívares lo excluye.
-    // Usamos el igtfBase ya redondeado (que representa el total en USD sin IGTF)
-    const totalBs = truncDec(igtfBase * exRate, 2);
+    // Excel calcula el total en Bolívares convirtiendo y redondeando cada componente individualmente:
+    // fleteBs = ROUNDUP(netFreight * exRate, 3)
+    // compBs = ROUNDUP((tdgVal + gcdVal + carVal + carfVal + seguroVal + containerVal) * exRate, 3)
+    // taxBs = ROUNDUP((ivaVal + franqueoVal) * exRate, 3)
+    // totalBs = ROUNDUP(fleteBs + compBs + taxBs, 3), formateado a 2 decimales
+    const fleteBs = roundUpDec(netFreight * exRate, 3);
+    const compBs = roundUpDec((tdgVal + gcdVal + carVal + carfVal + seguroVal + containerVal) * exRate, 3);
+    const taxBs = roundUpDec((ivaVal + franqueoVal) * exRate, 3);
+    
+    const totalBsRaw = roundUpDec(fleteBs + compBs + taxBs, 3);
+    const totalBs = roundHalfUpNum(totalBsRaw, 2);
+
     
     return {
         baseFreight,
