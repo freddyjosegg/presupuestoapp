@@ -315,7 +315,7 @@ h1, h2, h3, h4, .logo-text h1, .card-header h2, .receipt-header h3, .total-label
     }
 }
 
-.form-card::before {
+.form-card::before, .services-card::before {
     content: '';
     position: absolute;
     top: 0;
@@ -1176,11 +1176,12 @@ input:disabled {
 .receipt-card::before {
     content: '';
     position: absolute;
-    left: 20px;
-    right: 20px;
+    left: 0;
+    right: 0;
     top: 0;
     height: 4px;
-    background: repeating-linear-gradient(90deg, var(--primary) 0, var(--primary) 6px, transparent 6px, transparent 12px);
+    background: linear-gradient(90deg, var(--primary), #f43f5e);
+    z-index: 5;
 }
 
 .receipt-header {
