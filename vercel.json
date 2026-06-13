@@ -1,0 +1,9 @@
+{
+  "version": 2,
+  "rewrites": [
+    {
+      "source": "/api/latest-excel",
+      "destination": "/api/latest-excel.js"
+    }
+  ]
+}
