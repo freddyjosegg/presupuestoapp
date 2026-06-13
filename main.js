@@ -905,6 +905,7 @@ function clearMatrixPrices(hideRouteCard = true) {
     document.getElementById('itemSubtotalUSD').textContent = '$0.00';
     document.getElementById('itemIvaUSD').textContent = '$0.00';
     document.getElementById('itemFranqueoUSD').textContent = '$0.00';
+    document.getElementById('itemFranqueoRow').classList.add('hidden');
     document.getElementById('itemIgtfUSD').textContent = '$0.00';
     document.getElementById('itemTotalUSD').innerHTML = `$0.00<span class="igtf-subtext">($0.00 con IGTF)</span>`;
     document.getElementById('itemTotalBs').textContent = 'Bs. 0,00';
@@ -973,7 +974,7 @@ function renderDetailedReceipt() {
     // 3. Taxes & Totals
     document.getElementById('itemSubtotalUSD').textContent = `$${res.subtotal.toFixed(2)}`;
     document.getElementById('itemIvaUSD').textContent = `$${res.ivaVal.toFixed(2)}`;
-    document.getElementById('itemFranqueoUSD').textContent = `$${res.franqueoVal.toFixed(2)}`;
+    toggleReceiptRow('itemFranqueoRow', 'itemFranqueoUSD', res.franqueoVal);
     document.getElementById('itemIgtfUSD').textContent = `$${res.igtfVal.toFixed(2)}`;
     
     document.getElementById('itemTotalUSD').innerHTML = `$${res.totalUSDSinIgtf.toFixed(2)}<span class="igtf-subtext">($${res.totalUSD.toFixed(2)} con IGTF)</span>`;
