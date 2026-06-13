@@ -3,6 +3,16 @@ const DEFAULT_EXCEL_PATH = 'TARIFA ACTUAL PAQUETERIA USD 210526.xlsm';
 const STORAGE_KEY = 'presupuestoapp_db';
 const BCV_API_URL = 'https://ve.dolarapi.com/v1/dolares/oficial';
 
+// Utility: Format Bs. with point as thousands separator and comma for decimals
+function formatBs(value) {
+    if (value === undefined || value === null || isNaN(value)) {
+        return '0,00';
+    }
+    const parts = Number(value).toFixed(2).split('.');
+    parts[0] = parts[0].replace(/\B(?=(\d{3})+(?!\d))/g, ".");
+    return parts.join(',');
+}
+
 // State of the application
 let appState = {
     origins: [],        // { code, name, reparte }
@@ -75,33 +85,143 @@ const matrixCards = {
 };
 
 // Initialize Application
+// IndexedDB Helper Functions
+const DB_NAME = 'PresupuestoAppDB';
+const DB_VERSION = 1;
+const STORE_NAME = 'excel_store';
+
+function openDB() {
+    return new Promise((resolve, reject) => {
+        const request = indexedDB.open(DB_NAME, DB_VERSION);
+        request.onupgradeneeded = (e) => {
+            const db = e.target.result;
+            if (!db.objectStoreNames.contains(STORE_NAME)) {
+                db.createObjectStore(STORE_NAME);
+            }
+        };
+        request.onsuccess = (e) => resolve(e.target.result);
+        request.onerror = (e) => reject(e.target.error);
+    });
+}
+
+async function getDBItem(key) {
+    const db = await openDB();
+    return new Promise((resolve, reject) => {
+        const transaction = db.transaction(STORE_NAME, 'readonly');
+        const store = transaction.objectStore(STORE_NAME);
+        const request = store.get(key);
+        request.onsuccess = () => resolve(request.result);
+        request.onerror = () => reject(request.error);
+    });
+}
+
+async function setDBItem(key, value) {
+    const db = await openDB();
+    return new Promise((resolve, reject) => {
+        const transaction = db.transaction(STORE_NAME, 'readwrite');
+        const store = transaction.objectStore(STORE_NAME);
+        const request = store.put(value, key);
+        request.onsuccess = () => resolve();
+        request.onerror = () => reject(request.error);
+    });
+}
+
+// Register Service Worker for PWA
+function registerServiceWorker() {
+    if ('serviceWorker' in navigator) {
+        window.addEventListener('load', () => {
+            navigator.serviceWorker.register('sw.js')
+                .then(reg => console.log('Service Worker registrado con éxito:', reg.scope))
+                .catch(err => console.error('Error al registrar Service Worker:', err));
+        });
+    }
+}
+
+// PWA custom install prompt banner logic
+let deferredPrompt;
+function setupPwaInstall() {
+    const installBtn = document.getElementById('pwaInstallBtn');
+    if (!installBtn) return;
+    
+    window.addEventListener('beforeinstallprompt', (e) => {
+        e.preventDefault();
+        deferredPrompt = e;
+        installBtn.classList.remove('hidden');
+        
+        installBtn.addEventListener('click', () => {
+            installBtn.classList.add('hidden');
+            deferredPrompt.prompt();
+            deferredPrompt.userChoice.then((choiceResult) => {
+                if (choiceResult.outcome === 'accepted') {
+                    console.log('El usuario aceptó la instalación de PresupuestoApp');
+                } else {
+                    console.log('El usuario rechazó la instalación de PresupuestoApp');
+                }
+                deferredPrompt = null;
+            });
+        });
+    });
+    
+    window.addEventListener('appinstalled', (evt) => {
+        console.log('PresupuestoApp instalada con éxito en el sistema.');
+        installBtn.classList.add('hidden');
+        showToast('¡PresupuestoApp instalada con éxito!');
+    });
+}
+
+// Initialize Application
 window.addEventListener('DOMContentLoaded', () => {
     initApp();
 });
 
-function initApp() {
+async function initApp() {
     setupEventListeners();
+    setupPwaInstall();
+    registerServiceWorker();
     
     // Fetch BCV Rate at startup
     fetchBCVRate(true);
     
-    // 1. Try loading from LocalStorage
-    const cachedData = localStorage.getItem(STORAGE_KEY);
-    if (cachedData) {
-        try {
-            const parsed = JSON.parse(cachedData);
-            appState = { ...appState, ...parsed };
+    // 1. Try loading from IndexedDB
+    try {
+        const cachedState = await getDBItem('app_state');
+        if (cachedState) {
+            appState = { ...appState, ...cachedState };
             updateStatus('ready', `Cargado de caché local`, `${appState.excelName || 'Excel guardado'}`);
             populateDropdowns();
             calculateAll();
-            // Fetch file to check for updates silently
-            fetchDefaultExcel(true);
-        } catch (e) {
-            console.error('Error loading cached database, fetching new one...', e);
+            // Fetch file headers to check for updates silently
+            checkForExcelUpdates();
+        } else {
+            // First run: fetch full excel
             fetchDefaultExcel();
         }
-    } else {
+    } catch (e) {
+        console.error('Error loading from IndexedDB, fetching new one...', e);
         fetchDefaultExcel();
+    }
+}
+
+// Check if Excel has changed on the server using a HEAD request (Content-Length and Last-Modified)
+async function checkForExcelUpdates() {
+    try {
+        const response = await fetch(DEFAULT_EXCEL_PATH, { method: 'HEAD' });
+        if (!response.ok) return;
+        
+        const serverSize = parseInt(response.headers.get('Content-Length')) || 0;
+        const serverLastModified = response.headers.get('Last-Modified') || '';
+        
+        const cachedMeta = await getDBItem('excel_metadata');
+        
+        // If file differs from local version, download and reprocess
+        if (!cachedMeta || cachedMeta.size !== serverSize || cachedMeta.lastModified !== serverLastModified) {
+            console.log('Detectado nuevo archivo Excel en el servidor. Actualizando...');
+            fetchDefaultExcel(true); // silent fetch in background
+        } else {
+            console.log('El archivo Excel local está al día con el servidor.');
+        }
+    } catch (error) {
+        console.warn('No se pudo verificar actualizaciones del Excel (modo offline/red caída).', error);
     }
 }
 
@@ -112,7 +232,6 @@ async function fetchBCVRate(silent = false) {
     }
     
     try {
-        // Force fresh load using cache-buster query param
         const response = await fetch(`${BCV_API_URL}?t=${Date.now()}`);
         if (!response.ok) throw new Error('Network response was not ok');
         
@@ -120,7 +239,6 @@ async function fetchBCVRate(silent = false) {
         const rate = parseFloat(data.promedio);
         
         if (!isNaN(rate) && rate > 0) {
-            // Overwrite only if user hasn't typed a custom rate, or they clicked refresh (not silent)
             if (!userEditedRate || !silent) {
                 exchangeRate.value = rate.toFixed(2);
                 calculateAll();
@@ -151,6 +269,9 @@ async function fetchDefaultExcel(silent = false) {
         const response = await fetch(DEFAULT_EXCEL_PATH);
         if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
         
+        const serverSize = parseInt(response.headers.get('Content-Length')) || 0;
+        const serverLastModified = response.headers.get('Last-Modified') || '';
+        
         const blob = await response.blob();
         const arrayBuffer = await blob.arrayBuffer();
         
@@ -158,17 +279,34 @@ async function fetchDefaultExcel(silent = false) {
         appState.excelSize = blob.size;
         appState.excelDate = new Date().toLocaleDateString('es-VE');
         
-        // Use background Web Worker to parse
         const parsedData = await processExcelWithWorker(arrayBuffer);
         loadParsedData(parsedData);
         
-        // Save to cache
-        saveCache();
+        // Save to IndexedDB database
+        await setDBItem('app_state', {
+            origins: appState.origins,
+            destinations: appState.destinations,
+            routes: appState.routes,
+            tariffs: appState.tariffs,
+            constants: appState.constants,
+            excelName: appState.excelName,
+            excelSize: appState.excelSize,
+            excelDate: appState.excelDate
+        });
+        
+        await setDBItem('excel_metadata', {
+            name: DEFAULT_EXCEL_PATH,
+            size: serverSize || blob.size,
+            lastModified: serverLastModified || new Date().toUTCString(),
+            date: appState.excelDate
+        });
         
         updateStatus('ready', 'Excel conectado', `${appState.excelName} (${(appState.excelSize/1024/1024).toFixed(2)} MB)`);
         populateDropdowns();
         calculateAll();
-        showToast('Base de datos Excel cargada correctamente');
+        if (!silent) {
+            showToast('Base de datos Excel cargada correctamente');
+        }
     } catch (error) {
         console.error('Error loading default Excel:', error);
         if (!silent) {
@@ -178,30 +316,16 @@ async function fetchDefaultExcel(silent = false) {
     }
 }
 
-// Save parsed data to LocalStorage
-function saveCache() {
-    const dataToCache = {
-        origins: appState.origins,
-        destinations: appState.destinations,
-        routes: appState.routes,
-        tariffs: appState.tariffs,
-        constants: appState.constants,
-        excelName: appState.excelName,
-        excelSize: appState.excelSize,
-        excelDate: appState.excelDate
-    };
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(dataToCache));
-}
-
 // Update Excel connection status indicator
 function updateStatus(type, title, desc) {
+    if (!excelStatus) return;
     const indicator = excelStatus.querySelector('.status-indicator');
     const titleEl = excelStatus.querySelector('.status-title');
     const descEl = excelStatus.querySelector('.status-desc');
     
-    indicator.className = `status-indicator ${type}`;
-    titleEl.textContent = title;
-    descEl.textContent = desc;
+    if (indicator) indicator.className = `status-indicator ${type}`;
+    if (titleEl) titleEl.textContent = title;
+    if (descEl) descEl.textContent = desc;
 }
 
 // Process excel workbook using Web Worker in a background thread to prevent UI freezing
@@ -383,6 +507,11 @@ function setupEventListeners() {
         });
     });
     
+    weightInput.addEventListener('blur', () => {
+        const val = parseFloat(weightInput.value) || 0;
+        weightInput.value = val.toFixed(3);
+    });
+    
     // Matrix selection clicks
     Object.keys(matrixCards).forEach(opt => {
         matrixCards[opt].addEventListener('click', () => {
@@ -487,7 +616,24 @@ function handleExcelFile(file) {
             // Use background Web Worker to parse
             const parsedData = await processExcelWithWorker(arrayBuffer);
             loadParsedData(parsedData);
-            saveCache();
+            // Save to IndexedDB
+            await setDBItem('app_state', {
+                origins: appState.origins,
+                destinations: appState.destinations,
+                routes: appState.routes,
+                tariffs: appState.tariffs,
+                constants: appState.constants,
+                excelName: appState.excelName,
+                excelSize: appState.excelSize,
+                excelDate: appState.excelDate
+            });
+            
+            await setDBItem('excel_metadata', {
+                name: file.name,
+                size: file.size,
+                lastModified: new Date(file.lastModified).toUTCString(),
+                date: appState.excelDate
+            });
             
             updateStatus('ready', 'Excel Conectado (Manual)', `${file.name} (${(file.size/1024/1024).toFixed(2)} MB)`);
             populateDropdowns();
@@ -544,6 +690,11 @@ function syncBultosList() {
             calculateAll();
         });
         
+        input.addEventListener('blur', () => {
+            const v = parseFloat(input.value) || 0;
+            input.value = v.toFixed(3);
+        });
+        
         item.appendChild(span);
         item.appendChild(input);
         bultosInputsContainer.appendChild(item);
@@ -598,11 +749,11 @@ function calculateAll() {
     const alto = parseFloat(dimAlto.value) || 0;
     const volWeight = (largo * ancho * alto) / 5000;
     
-    valCubaje.textContent = volWeight.toLocaleString('es-VE', { minimumFractionDigits: 0, maximumFractionDigits: 2 });
+    valCubaje.textContent = volWeight.toFixed(3);
     
     // Max weight
     const finalWeight = Math.max(physWeight, volWeight);
-    valPesoFinal.textContent = finalWeight.toLocaleString('es-VE', { minimumFractionDigits: 0, maximumFractionDigits: 3 });
+    valPesoFinal.textContent = finalWeight.toFixed(3);
     
     // Si no hay peso ingresado (peso final es 0 o menor), limpiar los precios pero mantener la tarjeta de ruta visible
     if (finalWeight <= 0) {
@@ -632,8 +783,8 @@ function calculateAll() {
         const usdEl = document.getElementById(`matrixUSD_${opt}`);
         const bsEl = document.getElementById(`matrixBs_${opt}`);
         
-        usdEl.textContent = `$${res.totalUSD.toFixed(2)}`;
-        bsEl.textContent = `Bs. ${res.totalBs.toFixed(2)}`;
+        usdEl.innerHTML = `$${res.totalUSDSinIgtf.toFixed(2)}<div class="igtf-subtext">($${res.totalUSD.toFixed(2)} con IGTF)</div>`;
+        bsEl.textContent = `Bs. ${formatBs(res.totalBs)}`;
     });
     
     // Render active receipt details
@@ -742,6 +893,7 @@ function runScenario(tariffType, isCOD, weight, escala, declaredVal, discPercent
         ivaVal,
         franqueoVal,
         igtfVal,
+        totalUSDSinIgtf: igtfBase,
         totalUSD,
         totalBs,
         exRate,
@@ -756,8 +908,8 @@ function clearMatrixPrices(hideRouteCard = true) {
         routeInfoCard.classList.add('hidden');
     }
     Object.keys(matrixCards).forEach(opt => {
-        document.getElementById(`matrixUSD_${opt}`).textContent = '$0.00';
-        document.getElementById(`matrixBs_${opt}`).textContent = 'Bs. 0.00';
+        document.getElementById(`matrixUSD_${opt}`).innerHTML = `$0.00<span class="igtf-subtext">($0.00 con IGTF)</span>`;
+        document.getElementById(`matrixBs_${opt}`).textContent = 'Bs. 0,00';
     });
     
     // Clear receipt
@@ -766,8 +918,8 @@ function clearMatrixPrices(hideRouteCard = true) {
     document.getElementById('itemIvaUSD').textContent = '$0.00';
     document.getElementById('itemFranqueoUSD').textContent = '$0.00';
     document.getElementById('itemIgtfUSD').textContent = '$0.00';
-    document.getElementById('itemTotalUSD').textContent = '$0.00';
-    document.getElementById('itemTotalBs').textContent = 'Bs. 0.00';
+    document.getElementById('itemTotalUSD').innerHTML = `$0.00<span class="igtf-subtext">($0.00 con IGTF)</span>`;
+    document.getElementById('itemTotalBs').textContent = 'Bs. 0,00';
     document.getElementById('receiptRoute').textContent = 'Ruta: -';
 }
 
@@ -835,8 +987,8 @@ function renderDetailedReceipt() {
     document.getElementById('itemFranqueoUSD').textContent = `$${res.franqueoVal.toFixed(2)}`;
     document.getElementById('itemIgtfUSD').textContent = `$${res.igtfVal.toFixed(2)}`;
     
-    document.getElementById('itemTotalUSD').textContent = `$${res.totalUSD.toFixed(2)}`;
-    document.getElementById('itemTotalBs').textContent = `Bs. ${res.totalBs.toFixed(2)}`;
+    document.getElementById('itemTotalUSD').innerHTML = `$${res.totalUSDSinIgtf.toFixed(2)}<span class="igtf-subtext">($${res.totalUSD.toFixed(2)} con IGTF)</span>`;
+    document.getElementById('itemTotalBs').textContent = `Bs. ${formatBs(res.totalBs)}`;
 }
 
 // Toggle row visibility in receipt
@@ -869,7 +1021,7 @@ function copySummaryToClipboard() {
     let text = `=== PRESUPUESTO DE FLETE ===\n`;
     text += `Escenario: ${scenarioName}\n`;
     text += `Ruta: ${originName} → ${destName}\n`;
-    text += `Escala: ${res.escala} | Peso Cálculo: ${res.weight.toLocaleString('es-VE', { minimumFractionDigits: 0, maximumFractionDigits: 3 })} kg\n`;
+    text += `Escala: ${res.escala} | Peso Cálculo: ${res.weight.toFixed(3)} kg\n`;
     text += `-----------------------------------\n`;
     text += `Flete Base: $${res.baseFreight.toFixed(2)}\n`;
     if (res.discountVal > 0) {
@@ -887,9 +1039,9 @@ function copySummaryToClipboard() {
     text += `Franqueo Postal (10%): $${res.franqueoVal.toFixed(2)}\n`;
     text += `IGTF (3%): $${res.igtfVal.toFixed(2)}\n`;
     text += `-----------------------------------\n`;
-    text += `TOTAL ($): $${res.totalUSD.toFixed(2)}\n`;
-    text += `TOTAL (Bs.): Bs. ${res.totalBs.toFixed(2)}\n`;
-    text += `Tasa de cambio: Bs. ${res.exRate.toFixed(2)}/$\n`;
+    text += `TOTAL ($): $${res.totalUSDSinIgtf.toFixed(2)} ($${res.totalUSD.toFixed(2)} con IGTF)\n`;
+    text += `TOTAL (Bs.): Bs. ${formatBs(res.totalBs)}\n`;
+    text += `Tasa de cambio: Bs. ${formatBs(res.exRate)}/$\n`;
     text += `Generado por PresupuestoApp`;
     
     navigator.clipboard.writeText(text).then(() => {

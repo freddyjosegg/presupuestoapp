@@ -1,10 +1,20 @@
-importScripts('xlsx.full.min.js');
+console.log('[Worker] Script cargado en el hilo del worker.');
+try {
+    importScripts('xlsx.full.min.js');
+    console.log('[Worker] xlsx.full.min.js cargado correctamente.');
+} catch (err) {
+    console.error('[Worker ERROR] Falló importScripts:', err);
+}
 
 self.onmessage = function (e) {
+    console.log('[Worker] Mensaje recibido en onmessage.');
     const { arrayBuffer } = e.data;
     try {
+        console.log('[Worker] Tipo de arrayBuffer recibido:', typeof arrayBuffer, arrayBuffer ? arrayBuffer.byteLength : 'null');
         const data = new Uint8Array(arrayBuffer);
+        console.log('[Worker] Uint8Array creado con éxito. Tamaño:', data.length);
         
+        console.log('[Worker] Llamando a XLSX.read...');
         // Optimize XLSX read options to load only values, skipping styles, formulas and formatted texts
         const workbook = XLSX.read(data, {
             type: 'array',
@@ -14,7 +24,9 @@ self.onmessage = function (e) {
             cellFormula: false,
             cellText: false
         });
+        console.log('[Worker] XLSX.read finalizado con éxito.');
         
+        console.log('[Worker] Obteniendo hojas de Excel...');
         const sheet_cf = workbook.Sheets['CONSULTA FLETE USD'];
         const sheet_dir = workbook.Sheets['TARIFA ENTREGA A DIRECCION USD'];
         const sheet_age = workbook.Sheets['TARIFA CONSIGNADO AGENCIA USD'];
@@ -23,10 +35,24 @@ self.onmessage = function (e) {
             throw new Error("El archivo de Excel no contiene las hojas requeridas ('CONSULTA FLETE USD', 'TARIFA ENTREGA A DIRECCION USD', 'TARIFA CONSIGNADO AGENCIA USD').");
         }
         
+        // Optimize cell ranges to limit columns to A-P (16 columns), preventing SheetJS from parsing 16k+ columns
+        [sheet_dir, sheet_age].forEach(sheet => {
+            if (sheet && sheet['!ref']) {
+                const refParts = sheet['!ref'].split(':');
+                if (refParts.length === 2) {
+                    const endRow = refParts[1].replace(/^[A-Z]+/i, '');
+                    sheet['!ref'] = `A1:P${endRow}`;
+                }
+            }
+        });
+        
+        console.log('[Worker] Hojas validadas y rangos recortados con éxito. Parseando CONSULTA FLETE USD...');
         // 1. Parse CONSULTA FLETE USD
         const cfRows = XLSX.utils.sheet_to_json(sheet_cf, { header: 1 });
+        console.log('[Worker] cfRows parseado a JSON. Cantidad de filas:', cfRows.length);
         
         // Parse routes
+        console.log('[Worker] Parseando rutas...');
         const routes = {};
         for (let i = 1; i < cfRows.length; i++) {
             const row = cfRows[i];
@@ -37,8 +63,10 @@ self.onmessage = function (e) {
             const kms = parseFloat(row[6]) || 0;
             routes[`${originCode}_${destCode}`] = { escala, kms };
         }
+        console.log('[Worker] Rutas parseadas con éxito:', Object.keys(routes).length);
         
         // Parse origins
+        console.log('[Worker] Parseando orígenes...');
         const originsMap = new Map();
         for (let i = 2; i < cfRows.length; i++) {
             const row = cfRows[i];
@@ -52,8 +80,10 @@ self.onmessage = function (e) {
             }
         }
         const origins = Array.from(originsMap.values()).sort((a, b) => a.name.localeCompare(b.name));
+        console.log('[Worker] Orígenes parseados con éxito:', origins.length);
         
         // Parse destinations
+        console.log('[Worker] Parseando destinos...');
         const destMap = new Map();
         for (let i = 2; i < cfRows.length; i++) {
             const row = cfRows[i];
@@ -67,14 +97,18 @@ self.onmessage = function (e) {
             }
         }
         const destinations = Array.from(destMap.values()).sort((a, b) => a.name.localeCompare(b.name));
+        console.log('[Worker] Destinos parseados con éxito:', destinations.length);
         
         // 2. Parse tariffs
+        console.log('[Worker] Parseando tarifas...');
         const tariffs = {
             direccion: parseTariffRows(sheet_dir),
             agencia: parseTariffRows(sheet_age)
         };
+        console.log('[Worker] Tarifas parseadas con éxito. Dirección:', tariffs.direccion.length, 'Agencia:', tariffs.agencia.length);
         
         // 3. Parse constants
+        console.log('[Worker] Parseando constantes...');
         const constants = {
             tdgBase: getCellValue(sheet_dir, 'O23', 0.6),
             gcdMin: getCellValue(sheet_dir, 'O26', 0.8),
@@ -84,7 +118,9 @@ self.onmessage = function (e) {
             seguroRate: getCellValue(sheet_dir, 'O37', 3.2),
             containerMin: getCellValue(sheet_dir, 'O40', 0.75)
         };
+        console.log('[Worker] Constantes parseadas con éxito:', JSON.stringify(constants));
         
+        console.log('[Worker] Posteo de mensaje de vuelta al hilo principal...');
         self.postMessage({
             success: true,
             data: {
@@ -95,6 +131,7 @@ self.onmessage = function (e) {
                 constants
             }
         });
+        console.log('[Worker] Mensaje enviado.');
     } catch (error) {
         self.postMessage({
             success: false,
@@ -105,7 +142,10 @@ self.onmessage = function (e) {
 
 // Helper: Parse tariff rows
 function parseTariffRows(sheet) {
+    console.log('[Worker - parseTariffRows] Llamando a sheet_to_json...');
     const rows = XLSX.utils.sheet_to_json(sheet, { header: 1 });
+    console.log('[Worker - parseTariffRows] sheet_to_json finalizado. Cantidad de filas:', rows.length);
+    
     const tariffsList = [];
     for (let i = 7; i < rows.length; i++) {
         const row = rows[i];
@@ -135,7 +175,11 @@ function parseTariffRows(sheet) {
             Y05: parseFloat(row[6]) || 0
         });
     }
-    return tariffsList.sort((a, b) => a.limit - b.limit);
+    console.log('[Worker - parseTariffRows] Bucle finalizado. Cantidad de tarifas parseadas:', tariffsList.length);
+    console.log('[Worker - parseTariffRows] Ordenando tarifas...');
+    const sorted = tariffsList.sort((a, b) => a.limit - b.limit);
+    console.log('[Worker - parseTariffRows] Tarifas ordenadas.');
+    return sorted;
 }
 
 // Helper: Get cell value in sheet

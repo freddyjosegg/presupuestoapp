@@ -33,30 +33,44 @@ const path = require('path');
         if (!fileInput) {
             throw new Error('No se encontró el elemento #excelFileInput en el DOM.');
         }
-        const excelPath = path.resolve(__dirname, 'TARIFA ACTUAL PAQUETERIA USD 210526.xlsm');
+        const excelPath = path.resolve(__dirname, 'Carpeta nueva', 'TARIFA ACTUAL PAQUETERIA USD 210526.xlsm');
         await fileInput.uploadFile(excelPath);
 
         // Esperar a que el archivo Excel se procese y cambie el estado a ready
         console.log('Esperando a que la base de datos se cargue y procese...');
         await page.waitForFunction(() => {
-            const statusEl = document.getElementById('statusTitle');
-            return statusEl && statusEl.textContent.includes('Excel');
+            const statusTitle = document.querySelector('#excelStatus .status-title');
+            return statusTitle && statusTitle.textContent.includes('Manual');
         }, { timeout: 15000 });
 
-        const statusText = await page.$eval('#statusTitle', el => el.textContent);
+        const statusText = await page.$eval('#excelStatus .status-title', el => el.textContent);
         console.log(`Estado del Excel: ${statusText}`);
 
         // Seleccionar origen: VLP
         console.log('Seleccionando origen: VALLE DE LA PASCUA (VLP)...');
-        await page.click('#originInput');
-        await page.waitForSelector('.dropdown-item[data-value="VLP"]', { visible: true });
-        await page.click('.dropdown-item[data-value="VLP"]');
-
+        await page.evaluate(() => {
+            const el = document.getElementById('originInput');
+            el.value = 'VALLE';
+            el.dispatchEvent(new Event('input'));
+            const list = document.getElementById('originList');
+            list.classList.add('show');
+            el.parentElement.classList.add('open');
+        });
+        await page.waitForSelector('#originList .dropdown-item[data-value="VLP"]', { visible: true });
+        await page.click('#originList .dropdown-item[data-value="VLP"]');
+ 
         // Seleccionar destino: VAL
         console.log('Seleccionando destino: VALENCIA (VAL)...');
-        await page.click('#destinationInput');
-        await page.waitForSelector('.dropdown-item[data-value="VAL"]', { visible: true });
-        await page.click('.dropdown-item[data-value="VAL"]');
+        await page.evaluate(() => {
+            const el = document.getElementById('destinationInput');
+            el.value = 'VALENCIA';
+            el.dispatchEvent(new Event('input'));
+            const list = document.getElementById('destinationList');
+            list.classList.add('show');
+            el.parentElement.classList.add('open');
+        });
+        await page.waitForSelector('#destinationList .dropdown-item[data-value="VAL"]', { visible: true });
+        await page.click('#destinationList .dropdown-item[data-value="VAL"]');
 
         // Esperar a que se cargue la tarjeta de información de ruta
         console.log('Esperando información de ruta...');
@@ -65,12 +79,12 @@ const path = require('path');
         const kms = await page.$eval('#valKms', el => el.textContent);
         console.log(`Ruta cargada - Escala: ${escala}, Distancia: ${kms}`);
 
-        // Verificar que los precios sigan en $0.00 / Bs. 0.00 (peso <= 0)
+        // Verificar que los precios sigan en $0.00 / Bs. 0,00 (peso <= 0)
         console.log('Verificando que los precios estén en cero (peso inicial es 0)...');
         const initialUSD = await page.$eval('#matrixUSD_origDir', el => el.textContent);
         const initialBs = await page.$eval('#matrixBs_origDir', el => el.textContent);
         console.log(`Precios en peso 0 - USD: ${initialUSD}, Bs: ${initialBs}`);
-        if (initialUSD !== '$0.00' || initialBs !== 'Bs. 0.00') {
+        if (!initialUSD.includes('$0.00') || initialBs !== 'Bs. 0,00') {
             throw new Error(`Los precios con peso 0 no son cero: ${initialUSD} / ${initialBs}`);
         }
 
@@ -84,7 +98,7 @@ const path = require('path');
         // Esperar a que se calculen los precios (ya no deben ser cero)
         await page.waitForFunction(() => {
             const val = document.getElementById('matrixUSD_origDir').textContent;
-            return val !== '$0.00';
+            return !val.includes('$0.00');
         }, { timeout: 5000 });
 
         const updatedUSD = await page.$eval('#matrixUSD_origDir', el => el.textContent);
@@ -120,11 +134,15 @@ const path = require('path');
 
         // Validaciones: El total en Bs. debe ser (Subtotal + IVA + Franqueo) * exRate, es decir, sin IGTF
         const rateVal = parseFloat(await page.$eval('#exchangeRate', el => el.value));
-        const totalBsNum = parseFloat(receiptTotalBs.replace('Bs. ', '').replace(',', ''));
-        const totalUSDNum = parseFloat(receiptTotalUSD.replace('$', '').replace(',', ''));
+        const cleanBs = receiptTotalBs.replace('Bs. ', '').replace(/\./g, '').replace(',', '.');
+        const totalBsNum = parseFloat(cleanBs);
+        
+        const matchUSD = receiptTotalUSD.match(/\$([0-9.]+)/);
+        const totalUSDNum = matchUSD ? parseFloat(matchUSD[1]) : 0;
+        
         const igtfNum = parseFloat(itemIgtf.replace('$', '').replace(',', ''));
         
-        const expectedBs = (totalUSDNum - igtfNum) * rateVal;
+        const expectedBs = totalUSDNum * rateVal;
         console.log(`Tasa de cambio: ${rateVal}`);
         console.log(`Total Bs en pantalla: ${totalBsNum}`);
         console.log(`Total Bs esperado (Base Imponible * Tasa): ${expectedBs.toFixed(2)}`);

@@ -1,0 +1,18 @@
+{
+  "name": "PresupuestoApp Aerocav",
+  "short_name": "PresupuestoApp",
+  "description": "Calculadora offline de presupuestos de envío para Aerocav con soporte de tarifas locales y conversión de divisas.",
+  "start_url": ".",
+  "display": "standalone",
+  "orientation": "portrait-primary",
+  "background_color": "#ffffff",
+  "theme_color": "#d32f2f",
+  "icons": [
+    {
+      "src": "icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ]
+}

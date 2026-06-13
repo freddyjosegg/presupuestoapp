@@ -8,6 +8,14 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Outfit:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="style.css">
+    <!-- PWA Manifest & Meta Tags -->
+    <link rel="manifest" href="manifest.json">
+    <meta name="theme-color" content="#d32f2f">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="default">
+    <meta name="apple-mobile-web-app-title" content="PresupuestoApp">
+    <link rel="apple-touch-icon" href="icon-512.png">
+    <link rel="icon" type="image/png" href="icon-512.png">
     <!-- SheetJS Local (Offline) -->
     <script src="xlsx.full.min.js"></script>
 </head>
@@ -23,6 +31,13 @@
                     <h1>Presupuesto<span>App</span></h1>
                     <p>Calculadora de Fletes & Paquetería</p>
                 </div>
+                <!-- PWA Install Button -->
+                <button id="pwaInstallBtn" class="btn-pwa-install hidden" title="Instalar Aplicación">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" class="pwa-install-icon">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
+                    </svg>
+                    Instalar App
+                </button>
             </div>
             
             <!-- Excel Watcher Status -->
