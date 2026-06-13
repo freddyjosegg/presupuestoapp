@@ -777,6 +777,19 @@ input:disabled {
     background-color: white;
 }
 
+/* Disabled Switch States */
+.switch-container:has(input:disabled) {
+    cursor: not-allowed;
+}
+
+.switch-container input:disabled + .switch-slider {
+    opacity: 0.6;
+}
+
+.switch-container input:disabled ~ .switch-label {
+    opacity: 0.75;
+}
+
 /* Discount Input Box */
 .discount-container {
     display: flex;
