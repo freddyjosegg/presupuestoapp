@@ -40,13 +40,14 @@
                 </button>
             </div>
             
-            <!-- Excel Watcher Status -->
-            <div class="excel-status-card" id="excelStatus">
+            <!-- Excel Watcher Status (Click or Drag Excel to update) -->
+            <div class="excel-status-card" id="excelStatus" title="Haga clic o arrastre un archivo Excel aquí para actualizar tarifas">
                 <div class="status-indicator loading"></div>
                 <div class="status-info">
                     <span class="status-title">Cargando base de datos...</span>
                     <span class="status-desc">Iniciando base de datos Excel...</span>
                 </div>
+                <input type="file" id="excelFileInput" accept=".xlsx, .xlsm" style="display: none;">
             </div>
         </header>
 
@@ -54,17 +55,6 @@
         <main class="app-workspace">
             <!-- Left Panel: Inputs and Configuration -->
             <section class="control-panel">
-                <!-- Drag & Drop Zone -->
-                <div class="drag-drop-zone" id="dropzone">
-                    <svg class="upload-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                        <path stroke-linecap="round" stroke-linejoin="round" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12" />
-                    </svg>
-                    <div class="dropzone-text">
-                        <p class="main-text">Arrastra aquí el archivo Excel</p>
-                        <p class="sub-text">Para actualizar tarifas y constantes al instante</p>
-                    </div>
-                    <input type="file" id="excelFileInput" accept=".xlsx, .xlsm" style="display: none;">
-                </div>
 
                 <!-- Input Form Card -->
                 <div class="card form-card">

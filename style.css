@@ -196,14 +196,35 @@ h1, h2, h3, h4, .logo-text h1, .card-header h2, .receipt-header h3, .total-label
     padding: 8px 16px;
     border-radius: var(--radius-md);
     background: rgba(0, 0, 0, 0.15);
-    border: 1px solid rgba(255, 255, 255, 0.03);
+    border: 1px solid rgba(255, 255, 255, 0.05);
     justify-content: center;
+    cursor: pointer;
+    transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+    user-select: none;
+}
+
+.excel-status-card:hover {
+    background: rgba(211, 47, 47, 0.06);
+    border-color: rgba(211, 47, 47, 0.3);
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(211, 47, 47, 0.08);
+}
+
+.excel-status-card.dragover {
+    background: rgba(211, 47, 47, 0.08) !important;
+    border-color: var(--primary) !important;
+    box-shadow: 0 0 16px rgba(211, 47, 47, 0.15) !important;
+    transform: scale(1.02);
 }
 
 @media (prefers-color-scheme: light) {
     .excel-status-card {
         background: rgba(15, 23, 42, 0.03);
         border: 1px solid rgba(15, 23, 42, 0.04);
+    }
+    .excel-status-card:hover {
+        background: rgba(211, 47, 47, 0.04);
+        border-color: rgba(211, 47, 47, 0.2);
     }
 }
 
@@ -1166,7 +1187,7 @@ input:disabled {
     display: flex;
     flex-direction: column;
     gap: 8px;
-    border-bottom: 2px dashed var(--receipt-line);
+    border-bottom: 1px solid var(--border-color);
     padding-bottom: 18px;
 }
 
@@ -1240,7 +1261,7 @@ input:disabled {
 .receipt-item.flete-neto-row {
     padding-top: 6px;
     margin-top: 4px;
-    border-top: 1px dashed var(--receipt-line);
+    border-top: 1px solid var(--border-color);
 }
 
 .receipt-item.hidden {
@@ -1305,7 +1326,7 @@ input:disabled {
 }
 
 .bs-row {
-    border-top: 1px dashed var(--receipt-line);
+    border-top: 1px solid var(--border-color);
     padding-top: 8px;
     margin-top: 4px;
 }

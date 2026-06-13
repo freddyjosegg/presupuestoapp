@@ -41,7 +41,6 @@ let appState = {
 let userEditedRate = false;
 
 // UI Elements
-const dropzone = document.getElementById('dropzone');
 const excelFileInput = document.getElementById('excelFileInput');
 const excelStatus = document.getElementById('excelStatus');
 const originInput = document.getElementById('originInput');
@@ -461,26 +460,26 @@ function onRouteChanged() {
 
 // Event Listeners Setup
 function setupEventListeners() {
-    // Dropzone Drag & Drop
-    dropzone.addEventListener('click', () => excelFileInput.click());
+    // Excel Status Card acts as Drag & Drop and Click selector
+    excelStatus.addEventListener('click', () => excelFileInput.click());
     
     excelFileInput.addEventListener('change', (e) => {
         const file = e.target.files[0];
         if (file) handleExcelFile(file);
     });
     
-    dropzone.addEventListener('dragover', (e) => {
+    excelStatus.addEventListener('dragover', (e) => {
         e.preventDefault();
-        dropzone.classList.add('dragover');
+        excelStatus.classList.add('dragover');
     });
     
-    dropzone.addEventListener('dragleave', () => {
-        dropzone.classList.remove('dragover');
+    excelStatus.addEventListener('dragleave', () => {
+        excelStatus.classList.remove('dragover');
     });
     
-    dropzone.addEventListener('drop', (e) => {
+    excelStatus.addEventListener('drop', (e) => {
         e.preventDefault();
-        dropzone.classList.remove('dragover');
+        excelStatus.classList.remove('dragover');
         const file = e.dataTransfer.files[0];
         if (file) handleExcelFile(file);
     });
