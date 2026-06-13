@@ -782,7 +782,7 @@ function calculateAll() {
         const usdEl = document.getElementById(`matrixUSD_${opt}`);
         const bsEl = document.getElementById(`matrixBs_${opt}`);
         
-        usdEl.innerHTML = `$${res.totalUSDSinIgtf.toFixed(2)}<div class="igtf-subtext">($${res.totalUSD.toFixed(2)} con IGTF)</div>`;
+        usdEl.innerHTML = `$${res.totalUSDSinIgtf.toFixed(2)}<span class="igtf-subtext">($${res.totalUSD.toFixed(2)} con IGTF)</span>`;
         bsEl.textContent = `Bs. ${formatBs(res.totalBs)}`;
     });
     

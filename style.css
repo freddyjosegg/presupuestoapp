@@ -1098,6 +1098,8 @@ input:disabled {
     display: flex;
     flex-direction: column;
     margin-top: 4px;
+    min-height: 52px;
+    justify-content: flex-start;
 }
 
 .matrix-card .price-usd {
@@ -1105,6 +1107,10 @@ input:disabled {
     font-weight: 800;
     line-height: 1.1;
     color: var(--text-primary);
+    display: flex;
+    align-items: baseline;
+    gap: 6px;
+    flex-wrap: wrap;
 }
 
 @media (min-width: 768px) {
@@ -1134,6 +1140,15 @@ input:disabled {
     font-weight: 500;
     color: var(--text-muted);
     margin-top: 2px;
+}
+
+.matrix-card .igtf-subtext {
+    display: inline-block;
+    font-size: 0.65rem;
+    font-weight: 500;
+    color: var(--text-muted);
+    line-height: 1.2;
+    margin-top: 0;
 }
 
 .total-row .igtf-subtext {
