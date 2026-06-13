@@ -1211,68 +1211,45 @@ input:disabled {
 .receipt-header {
     display: flex;
     flex-direction: column;
-    gap: 8px;
+    gap: 12px;
     border-bottom: 1px solid var(--border-color);
     padding-bottom: 18px;
 }
 
-.receipt-title-row {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    gap: 16px;
-}
-
-.receipt-title-area {
-    display: flex;
-    align-items: center;
-    gap: 12px;
-}
-
-.receipt-badge {
-    padding: 4px 10px;
-    font-size: 0.6rem;
-    font-weight: 700;
-    background: var(--primary);
-    color: white;
-    border-radius: 20px;
-    text-transform: uppercase;
-    letter-spacing: 0.5px;
-    display: inline-block;
-}
-
 .receipt-header h3 {
-    font-size: 1rem;
+    font-size: 1.15rem;
     font-weight: 700;
     color: var(--receipt-text);
-    display: inline-flex;
-    align-items: center;
-    gap: 8px;
-    flex-wrap: wrap;
 }
 
 .receipt-meta {
     display: flex;
-    justify-content: flex-end;
+    flex-direction: column;
+    gap: 6px;
     font-size: 0.78rem;
     color: var(--text-secondary);
 }
 
-.receipt-date-container {
+.meta-row {
     display: flex;
-    justify-content: flex-start;
+    justify-content: space-between;
+    align-items: center;
+    width: 100%;
+}
+
+.text-origen {
+    color: var(--primary);
+    font-weight: 700;
+}
+
+.text-destino {
+    color: var(--warning);
+    font-weight: 700;
 }
 
 #receiptDate {
     font-weight: 700;
-    font-size: 0.82rem;
     color: var(--primary);
-    background: var(--primary-glow);
-    padding: 4px 10px;
-    border-radius: var(--radius-sm);
-    border: 1px solid rgba(211, 47, 47, 0.15);
-    display: inline-flex;
-    align-items: center;
 }
 
 .receipt-section {
@@ -1530,16 +1507,8 @@ input:disabled {
         color: black !important;
     }
     
-    .receipt-meta, .receipt-item, .receipt-section h4, .receipt-print-note {
+    .receipt-meta, .receipt-item, .receipt-section h4, .receipt-print-note, .text-origen, .text-destino, #receiptDate {
         color: #334155 !important;
-    }
-    
-    #receiptDate {
-        background: transparent !important;
-        border: none !important;
-        padding: 0 !important;
-        color: black !important;
-        font-size: 0.82rem !important;
     }
     
     .receipt-line, .receipt-item.flete-neto-row, .bs-row {

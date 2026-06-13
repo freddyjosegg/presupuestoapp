@@ -943,17 +943,15 @@ function renderDetailedReceipt() {
     route.textContent = `Ruta: ${originName} → ${destName} (${res.escala})`;
     
     if (opt.startsWith('orig')) {
-        badge.textContent = 'Pago en Origen';
-        badge.className = 'receipt-badge tag-origen';
+        badge.innerHTML = 'Pago: <strong class="text-origen">Pago en Origen</strong>';
     } else {
-        badge.textContent = 'Cobro en Destino';
-        badge.className = 'receipt-badge tag-destino';
+        badge.innerHTML = 'Pago: <strong class="text-destino">Cobro en Destino</strong>';
     }
     
     if (opt.endsWith('Dir')) {
-        title.textContent = 'Entrega a Dirección';
+        title.textContent = 'Presupuesto: Entrega a Dirección';
     } else {
-        title.textContent = 'Retiro en Agencia';
+        title.textContent = 'Presupuesto: Retiro en Agencia';
     }
     
     // 2. Line Items
