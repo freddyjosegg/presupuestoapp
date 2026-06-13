@@ -1241,9 +1241,16 @@ input:disabled {
 
 .receipt-meta {
     display: flex;
-    justify-content: space-between;
-    font-size: 0.7rem;
+    flex-direction: column;
+    gap: 4px;
+    font-size: 0.72rem;
     color: var(--text-secondary);
+}
+
+#receiptDate {
+    font-weight: 700;
+    font-size: 0.78rem;
+    color: var(--receipt-text);
 }
 
 .receipt-section {
@@ -1252,6 +1259,13 @@ input:disabled {
     gap: 10px;
     border-bottom: 1px solid var(--receipt-line);
     padding-bottom: 16px;
+    margin-bottom: 16px;
+}
+
+.receipt-section:last-of-type {
+    border-bottom: none;
+    padding-bottom: 0;
+    margin-bottom: 4px;
 }
 
 .receipt-section h4 {
@@ -1366,6 +1380,16 @@ input:disabled {
     opacity: 0.85;
 }
 
+.receipt-print-note {
+    font-size: 0.68rem;
+    color: var(--text-muted);
+    line-height: 1.35;
+    border-top: 1px solid var(--border-color);
+    padding-top: 12px;
+    margin-top: 12px;
+    font-style: italic;
+}
+
 /* Receipt Actions - Mobile first (stacked) */
 .receipt-actions {
     display: grid;
@@ -1441,12 +1465,19 @@ input:disabled {
         padding: 0 !important;
     }
     
-    .app-container, .app-header, .control-panel, .results-header, .matrix-grid, .receipt-actions, #toast {
+    .app-header, .control-panel, .results-header, .matrix-grid, .receipt-actions, #toast, .btn-pwa-install {
         display: none !important;
     }
     
-    .results-panel {
+    .app-container, .app-workspace, .results-panel {
+        display: block !important;
         width: 100% !important;
+        max-width: 100% !important;
+        margin: 0 !important;
+        padding: 0 !important;
+        border: none !important;
+        box-shadow: none !important;
+        background: transparent !important;
     }
     
     .receipt-card {
@@ -1477,7 +1508,7 @@ input:disabled {
         color: black !important;
     }
     
-    .receipt-meta, .receipt-item, .receipt-section h4 {
+    .receipt-meta, .receipt-item, .receipt-section h4, .receipt-print-note {
         color: #334155 !important;
     }
     

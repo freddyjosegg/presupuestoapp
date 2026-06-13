@@ -920,6 +920,7 @@ function clearMatrixPrices(hideRouteCard = true) {
     document.getElementById('itemTotalUSD').innerHTML = `$0.00<span class="igtf-subtext">($0.00 con IGTF)</span>`;
     document.getElementById('itemTotalBs').textContent = 'Bs. 0,00';
     document.getElementById('receiptRoute').textContent = 'Ruta: -';
+    document.getElementById('printNoteDate').textContent = '-';
 }
 
 // Render detailed invoice breakdown for selected option
@@ -988,6 +989,10 @@ function renderDetailedReceipt() {
     
     document.getElementById('itemTotalUSD').innerHTML = `$${res.totalUSDSinIgtf.toFixed(2)}<span class="igtf-subtext">($${res.totalUSD.toFixed(2)} con IGTF)</span>`;
     document.getElementById('itemTotalBs').textContent = `Bs. ${formatBs(res.totalBs)}`;
+    
+    // Set legal note date
+    const printDate = appState.excelDate || new Date().toLocaleDateString('es-VE');
+    document.getElementById('printNoteDate').textContent = printDate;
 }
 
 // Toggle row visibility in receipt
