@@ -4,11 +4,20 @@ const STORAGE_KEY = 'presupuestoapp_db';
 const BCV_API_URL = 'https://ve.dolarapi.com/v1/dolares/oficial';
 
 // Utility: Format Bs. with point as thousands separator and comma for decimals
+function roundHalfUp(val, decimals = 2) {
+    if (val === undefined || val === null || isNaN(val)) {
+        return (0).toFixed(decimals);
+    }
+    const factor = Math.pow(10, decimals);
+    return (Math.round((val + 1e-9) * factor) / factor).toFixed(decimals);
+}
+
+// Utility: Format Bs. with point as thousands separator and comma for decimals
 function formatBs(value) {
     if (value === undefined || value === null || isNaN(value)) {
         return '0,00';
     }
-    const parts = Number(value).toFixed(2).split('.');
+    const parts = roundHalfUp(value, 2).split('.');
     parts[0] = parts[0].replace(/\B(?=(\d{3})+(?!\d))/g, ".");
     return parts.join(',');
 }
@@ -771,7 +780,7 @@ function calculateAll() {
         const usdEl = document.getElementById(`matrixUSD_${opt}`);
         const bsEl = document.getElementById(`matrixBs_${opt}`);
         
-        usdEl.innerHTML = `$${res.totalUSDSinIgtf.toFixed(2)}<span class="igtf-subtext">($${res.totalUSD.toFixed(2)} con IGTF)</span>`;
+        usdEl.innerHTML = `$${roundHalfUp(res.totalUSDSinIgtf, 2)}<span class="igtf-subtext">($${roundHalfUp(res.totalUSD, 2)} con IGTF)</span>`;
         bsEl.textContent = `Bs. ${formatBs(res.totalBs)}`;
     });
     
@@ -865,7 +874,7 @@ function runScenario(tariffType, isCOD, weight, escala, declaredVal, discPercent
     
     // 13. Total Bs
     // El IGTF solo aplica para pagos en divisas, por lo que el total en bolívares lo excluye.
-    const totalBs = igtfBase * exRate;
+    const totalBs = Math.floor((igtfBase * exRate) * 100) / 100;
     
     return {
         baseFreight,
@@ -947,7 +956,7 @@ function renderDetailedReceipt() {
     }
     
     // 2. Line Items
-    document.getElementById('itemBaseUSD').textContent = `$${res.baseFreight.toFixed(2)}`;
+    document.getElementById('itemBaseUSD').textContent = `$${roundHalfUp(res.baseFreight, 2)}`;
     
     // Discount
     const discRow = document.getElementById('discountRow');
@@ -956,8 +965,8 @@ function renderDetailedReceipt() {
         discRow.classList.remove('hidden');
         netRow.classList.remove('hidden');
         document.getElementById('itemDiscountPercent').textContent = discountPercent.value;
-        document.getElementById('itemDiscountUSD').textContent = `-$${res.discountVal.toFixed(2)}`;
-        document.getElementById('itemNetUSD').textContent = `$${res.netFreight.toFixed(2)}`;
+        document.getElementById('itemDiscountUSD').textContent = `-$${roundHalfUp(res.discountVal, 2)}`;
+        document.getElementById('itemNetUSD').textContent = `$${roundHalfUp(res.netFreight, 2)}`;
     } else {
         discRow.classList.add('hidden');
         netRow.classList.add('hidden');
@@ -972,12 +981,12 @@ function renderDetailedReceipt() {
     toggleReceiptRow('itemContenedorRow', 'itemContenedorUSD', res.containerVal);
     
     // 3. Taxes & Totals
-    document.getElementById('itemSubtotalUSD').textContent = `$${res.subtotal.toFixed(2)}`;
-    document.getElementById('itemIvaUSD').textContent = `$${res.ivaVal.toFixed(2)}`;
+    document.getElementById('itemSubtotalUSD').textContent = `$${roundHalfUp(res.subtotal, 2)}`;
+    document.getElementById('itemIvaUSD').textContent = `$${roundHalfUp(res.ivaVal, 2)}`;
     toggleReceiptRow('itemFranqueoRow', 'itemFranqueoUSD', res.franqueoVal);
-    document.getElementById('itemIgtfUSD').textContent = `$${res.igtfVal.toFixed(2)}`;
+    document.getElementById('itemIgtfUSD').textContent = `$${roundHalfUp(res.igtfVal, 2)}`;
     
-    document.getElementById('itemTotalUSD').innerHTML = `$${res.totalUSDSinIgtf.toFixed(2)}<span class="igtf-subtext">($${res.totalUSD.toFixed(2)} con IGTF)</span>`;
+    document.getElementById('itemTotalUSD').innerHTML = `$${roundHalfUp(res.totalUSDSinIgtf, 2)}<span class="igtf-subtext">($${roundHalfUp(res.totalUSD, 2)} con IGTF)</span>`;
     document.getElementById('itemTotalBs').textContent = `Bs. ${formatBs(res.totalBs)}`;
     
     // Set legal note date
@@ -992,7 +1001,7 @@ function toggleReceiptRow(rowId, valId, value) {
     
     if (value > 0) {
         row.classList.remove('hidden');
-        valEl.textContent = `$${value.toFixed(2)}`;
+        valEl.textContent = `$${roundHalfUp(value, 2)}`;
     } else {
         row.classList.add('hidden');
     }
@@ -1017,23 +1026,23 @@ function copySummaryToClipboard() {
     text += `Ruta: ${originName} → ${destName}\n`;
     text += `Escala: ${res.escala} | Peso Cálculo: ${res.weight.toFixed(3)} kg\n`;
     text += `-----------------------------------\n`;
-    text += `Flete Base: $${res.baseFreight.toFixed(2)}\n`;
+    text += `Flete Base: $${roundHalfUp(res.baseFreight, 2)}\n`;
     if (res.discountVal > 0) {
-        text += `Descuento (${discountPercent.value}%): -$${res.discountVal.toFixed(2)}\n`;
-        text += `Flete Neto: $${res.netFreight.toFixed(2)}\n`;
+        text += `Descuento (${discountPercent.value}%): -$${roundHalfUp(res.discountVal, 2)}\n`;
+        text += `Flete Neto: $${roundHalfUp(res.netFreight, 2)}\n`;
     }
-    if (res.tdgVal > 0) text += `Trámite Guía (TDG): $${res.tdgVal.toFixed(2)}\n`;
-    if (res.gcdVal > 0) text += `Cobro a Destino (GCD): $${res.gcdVal.toFixed(2)}\n`;
-    if (res.carVal > 0) text += `Acuse de Recibo (CAR): $${res.carVal.toFixed(2)}\n`;
-    if (res.carfVal > 0) text += `Acuse con Factura (CAR F): $${res.carfVal.toFixed(2)}\n`;
-    if (res.seguroVal > 0) text += `Seguro de Mercancía: $${res.seguroVal.toFixed(2)}\n`;
-    if (res.containerVal > 0) text += `Contenedor (10%): $${res.containerVal.toFixed(2)}\n`;
-    text += `Subtotal Base: $${res.subtotal.toFixed(2)}\n`;
-    text += `IVA (16%): $${res.ivaVal.toFixed(2)}\n`;
-    text += `Franqueo Postal (10%): $${res.franqueoVal.toFixed(2)}\n`;
-    text += `IGTF (3%): $${res.igtfVal.toFixed(2)}\n`;
+    if (res.tdgVal > 0) text += `Trámite Guía (TDG): $${roundHalfUp(res.tdgVal, 2)}\n`;
+    if (res.gcdVal > 0) text += `Cobro a Destino (GCD): $${roundHalfUp(res.gcdVal, 2)}\n`;
+    if (res.carVal > 0) text += `Acuse de Recibo (CAR): $${roundHalfUp(res.carVal, 2)}\n`;
+    if (res.carfVal > 0) text += `Acuse con Factura (CAR F): $${roundHalfUp(res.carfVal, 2)}\n`;
+    if (res.seguroVal > 0) text += `Seguro de Mercancía: $${roundHalfUp(res.seguroVal, 2)}\n`;
+    if (res.containerVal > 0) text += `Contenedor (10%): $${roundHalfUp(res.containerVal, 2)}\n`;
+    text += `Subtotal Base: $${roundHalfUp(res.subtotal, 2)}\n`;
+    text += `IVA (16%): $${roundHalfUp(res.ivaVal, 2)}\n`;
+    text += `Franqueo Postal (10%): $${roundHalfUp(res.franqueoVal, 2)}\n`;
+    text += `IGTF (3%): $${roundHalfUp(res.igtfVal, 2)}\n`;
     text += `-----------------------------------\n`;
-    text += `TOTAL ($): $${res.totalUSDSinIgtf.toFixed(2)} ($${res.totalUSD.toFixed(2)} con IGTF)\n`;
+    text += `TOTAL ($): $${roundHalfUp(res.totalUSDSinIgtf, 2)} ($${roundHalfUp(res.totalUSD, 2)} con IGTF)\n`;
     text += `TOTAL (Bs.): Bs. ${formatBs(res.totalBs)}\n`;
     text += `Tasa de cambio: Bs. ${formatBs(res.exRate)}/$\n`;
     text += `Generado por PresupuestoApp`;
