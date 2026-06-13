@@ -656,11 +656,6 @@ function syncBultosList() {
     const totalW = Math.max(0, parseFloat(weightInput.value) || 0);
     const avgW = totalW / count;
     
-    // Save existing inputs values if possible
-    const currentValues = [];
-    const inputs = bultosInputsContainer.querySelectorAll('input');
-    inputs.forEach(inp => currentValues.push(parseFloat(inp.value) || 0));
-    
     bultosInputsContainer.innerHTML = '';
     
     for (let i = 0; i < count; i++) {
@@ -674,13 +669,7 @@ function syncBultosList() {
         input.type = 'number';
         input.min = '0';
         input.step = '0.001';
-        
-        // Restore value if available, else assign average
-        let val = avgW;
-        if (i < currentValues.length && currentValues.length === count) {
-            val = currentValues[i];
-        }
-        input.value = val.toFixed(3);
+        input.value = avgW.toFixed(3);
         
         // Listen to changes in individual inputs
         input.addEventListener('input', () => {
