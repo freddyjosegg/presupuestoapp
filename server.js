@@ -21,8 +21,9 @@ const MIME_TYPES = {
 const server = http.createServer((req, res) => {
     console.log(`${req.method} ${req.url}`);
 
-    // Parse URL path
-    let filePath = req.url === '/' ? './index.html' : '.' + req.url.split('?')[0];
+    // Parse URL path and decode URI components (supporting spaces in filenames)
+    let cleanUrl = decodeURIComponent(req.url.split('?')[0]);
+    let filePath = cleanUrl === '/' ? './index.html' : '.' + cleanUrl;
     filePath = path.resolve(__dirname, filePath);
 
     // Security check: ensure filePath is within workspace

@@ -158,7 +158,9 @@ async function fetchDefaultExcel(silent = false) {
         appState.excelSize = blob.size;
         appState.excelDate = new Date().toLocaleDateString('es-VE');
         
-        parseExcelData(arrayBuffer);
+        // Use background Web Worker to parse
+        const parsedData = await processExcelWithWorker(arrayBuffer);
+        loadParsedData(parsedData);
         
         // Save to cache
         saveCache();
@@ -202,132 +204,35 @@ function updateStatus(type, title, desc) {
     descEl.textContent = desc;
 }
 
-// Parse excel workbook array buffer
-function parseExcelData(arrayBuffer) {
-    const data = new Uint8Array(arrayBuffer);
-    const workbook = XLSX.read(data, { type: 'array', cellDates: true, cellNF: true, cellHTML: false });
-    
-    // Parse sheets
-    parseConsultaFleteSheet(workbook.Sheets['CONSULTA FLETE USD']);
-    parseTariffSheet(workbook.Sheets['TARIFA ENTREGA A DIRECCION USD'], 'direccion');
-    parseTariffSheet(workbook.Sheets['TARIFA CONSIGNADO AGENCIA USD'], 'agencia');
-}
-
-// Parse sheet: CONSULTA FLETE USD
-function parseConsultaFleteSheet(sheet) {
-    if (!sheet) return;
-    
-    const rows = XLSX.utils.sheet_to_json(sheet, { header: 1 });
-    
-    // 1. Parse route map (Columns A to G)
-    // Row 0 is headers: Columna1, Columna2, Columna3, Columna4, Columna5, ESCALA, KMS
-    const routes = {};
-    for (let i = 1; i < rows.length; i++) {
-        const row = rows[i];
-        if (!row || !row[1] || !row[3]) continue;
-        const originCode = String(row[1]).trim().toUpperCase();
-        const destCode = String(row[3]).trim().toUpperCase();
-        const escala = row[5] ? String(row[5]).trim() : '';
-        const kms = parseFloat(row[6]) || 0;
-        
-        routes[`${originCode}_${destCode}`] = { escala, kms };
-    }
-    appState.routes = routes;
-    
-    // 2. Parse origins (Columns I to K, starting at row 3 (index 2))
-    const originsMap = new Map();
-    for (let i = 2; i < rows.length; i++) {
-        const row = rows[i];
-        if (!row) continue;
-        const code = row[8] ? String(row[8]).trim().toUpperCase() : null;
-        const name = row[9] ? String(row[9]).trim() : null;
-        const reparte = row[10] ? String(row[10]).trim() : '';
-        
-        if (code && code !== 'O' && code !== 'ORIGEN') {
-            originsMap.set(code, { code, name: name || code, reparte });
-        }
-    }
-    appState.origins = Array.from(originsMap.values()).sort((a, b) => a.name.localeCompare(b.name));
-    
-    // 3. Parse destinations (Columns M to O, starting at row 3 (index 2))
-    const destMap = new Map();
-    for (let i = 2; i < rows.length; i++) {
-        const row = rows[i];
-        if (!row) continue;
-        const code = row[12] ? String(row[12]).trim().toUpperCase() : null;
-        const name = row[13] ? String(row[13]).trim() : null;
-        const reparte = row[14] ? String(row[14]).trim() : '';
-        
-        if (code && code !== 'O' && code !== 'DESTINO') {
-            destMap.set(code, { code, name: name || code, reparte });
-        }
-    }
-    appState.destinations = Array.from(destMap.values()).sort((a, b) => a.name.localeCompare(b.name));
-}
-
-// Parse tariff sheets (Direccion & Agencia)
-function parseTariffSheet(sheet, type) {
-    if (!sheet) return;
-    const rows = XLSX.utils.sheet_to_json(sheet, { header: 1 });
-    
-    // Read tariffs starting from row 8 (index 7)
-    const tariffsList = [];
-    for (let i = 7; i < rows.length; i++) {
-        const row = rows[i];
-        if (!row) continue;
-        
-        const label = row[0] ? String(row[0]).trim() : '';
-        const limitVal = parseFloat(row[1]);
-        
-        if (!label) continue;
-        
-        // Special check for first row which has "Hasta  0,500" and limit might be blank
-        let limit = limitVal;
-        if (isNaN(limitVal)) {
-            if (label.includes('0,500') || label.includes('0.500')) {
-                limit = 0.5;
+// Process excel workbook using Web Worker in a background thread to prevent UI freezing
+function processExcelWithWorker(arrayBuffer) {
+    return new Promise((resolve, reject) => {
+        const worker = new Worker('worker.js');
+        worker.onmessage = function (e) {
+            const { success, data, error } = e.data;
+            worker.terminate();
+            if (success) {
+                resolve(data);
             } else {
-                continue; // Skip invalid rows
+                reject(new Error(error));
             }
-        }
-        
-        tariffsList.push({
-            label,
-            limit,
-            Y01: parseFloat(row[2]) || 0,
-            Y02: parseFloat(row[3]) || 0,
-            Y03: parseFloat(row[4]) || 0,
-            Y04: parseFloat(row[5]) || 0,
-            Y05: parseFloat(row[6]) || 0
-        });
-    }
-    
-    // Sort ascending by limit
-    tariffsList.sort((a, b) => a.limit - b.limit);
-    appState.tariffs[type] = tariffsList;
-    
-    // If it's the direction sheet, let's also read the constants
-    if (type === 'direccion') {
-        appState.constants.tdgBase = getCellValue(sheet, 'O23', 0.6);
-        appState.constants.gcdMin = getCellValue(sheet, 'O26', 0.8);
-        appState.constants.carBase = getCellValue(sheet, 'O29', 1.2);
-        appState.constants.carfBase = getCellValue(sheet, 'O32', 1.8);
-        appState.constants.seguroMin = getCellValue(sheet, 'O36', 1.76);
-        
-        // Seguro rate is typically 3.2 (meaning 3.2%).
-        const rawSeguroRate = getCellValue(sheet, 'O37', 3.2);
-        appState.constants.seguroRate = rawSeguroRate;
-        
-        appState.constants.containerMin = getCellValue(sheet, 'O40', 0.75);
-    }
+        };
+        worker.onerror = function (err) {
+            worker.terminate();
+            reject(err);
+        };
+        // Use transferable object to avoid copying memory buffer
+        worker.postMessage({ arrayBuffer }, [arrayBuffer]);
+    });
 }
 
-// Helper: Get cell value in sheet
-function getCellValue(sheet, address, defaultValue) {
-    const cell = sheet[address];
-    if (!cell) return defaultValue;
-    const val = parseFloat(cell.v);
-    return isNaN(val) ? defaultValue : val;
+// Load parsed data from worker into application state
+function loadParsedData(data) {
+    appState.origins = data.origins;
+    appState.destinations = data.destinations;
+    appState.routes = data.routes;
+    appState.tariffs = data.tariffs;
+    appState.constants = data.constants;
 }
 
 // Populate search lists for Dropdowns
@@ -572,14 +477,16 @@ function handleExcelFile(file) {
     updateStatus('loading', 'Cargando Excel subido...', file.name);
     
     const reader = new FileReader();
-    reader.onload = (e) => {
+    reader.onload = async (e) => {
         try {
             const arrayBuffer = e.target.result;
             appState.excelName = file.name;
             appState.excelSize = file.size;
             appState.excelDate = new Date().toLocaleDateString('es-VE');
             
-            parseExcelData(arrayBuffer);
+            // Use background Web Worker to parse
+            const parsedData = await processExcelWithWorker(arrayBuffer);
+            loadParsedData(parsedData);
             saveCache();
             
             updateStatus('ready', 'Excel Conectado (Manual)', `${file.name} (${(file.size/1024/1024).toFixed(2)} MB)`);

@@ -5,7 +5,8 @@
   "main": "server.js",
   "scripts": {
     "start": "node server.js",
-    "dev": "node server.js"
+    "dev": "node server.js",
+    "test": "node test.js"
   },
   "keywords": [
     "fletes",
@@ -13,5 +14,8 @@
     "calc"
   ],
   "author": "Fred",
-  "license": "ISC"
+  "license": "ISC",
+  "devDependencies": {
+    "puppeteer": "^25.1.0"
+  }
 }
