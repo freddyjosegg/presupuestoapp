@@ -8,7 +8,7 @@ const path = require('path');
         console.log('Iniciando navegador Puppeteer...');
         browser = await puppeteer.launch({
             headless: true,
-            args: ['--no-sandbox', '--disable-setuid-sandbox']
+            args: ['--no-sandbox', '--disable-setuid-sandbox', '--ignore-certificate-errors']
         });
         page = await browser.newPage();
         
@@ -19,8 +19,8 @@ const path = require('path');
         page.on('console', msg => console.log(`[NAVEGADOR] ${msg.text()}`));
         page.on('pageerror', err => console.log(`[NAVEGADOR ERROR] ${err.toString()}`));
 
-        console.log('Navegando a la app local (http://127.0.0.1:3000)...');
-        await page.goto('http://127.0.0.1:3000', { waitUntil: 'domcontentloaded', timeout: 30000 });
+        console.log('Navegando a la app local (https://127.0.0.1:3000)...');
+        await page.goto('https://127.0.0.1:3000', { waitUntil: 'domcontentloaded', timeout: 30000 });
 
         // Esperar 2 segundos para inicializar scripts y DOM
         await new Promise(resolve => setTimeout(resolve, 2000));
@@ -33,7 +33,7 @@ const path = require('path');
         if (!fileInput) {
             throw new Error('No se encontró el elemento #excelFileInput en el DOM.');
         }
-        const excelPath = path.resolve(__dirname, 'Carpeta nueva', 'TARIFA ACTUAL PAQUETERIA USD 210526.xlsm');
+        const excelPath = path.resolve(__dirname, 'DB', 'TARIFA ACTUAL PAQUETERIA USD 210526.xlsm');
         await fileInput.uploadFile(excelPath);
 
         // Esperar a que el archivo Excel se procese y cambie el estado a ready

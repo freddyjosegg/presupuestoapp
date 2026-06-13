@@ -18,3 +18,9 @@ Thumbs.db
 
 # Node dependencies
 node_modules/
+
+# Local SSL Certificates for HTTPS testing
+*.pem
+
+# Puppeteer Test screenshots
+test_*.png

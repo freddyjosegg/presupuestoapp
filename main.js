@@ -1,5 +1,5 @@
 // Configuration and Constants
-const DEFAULT_EXCEL_PATH = 'TARIFA ACTUAL PAQUETERIA USD 210526.xlsm';
+const DEFAULT_EXCEL_PATH = 'DB/TARIFA ACTUAL PAQUETERIA USD 210526.xlsm';
 const STORAGE_KEY = 'presupuestoapp_db';
 const BCV_API_URL = 'https://ve.dolarapi.com/v1/dolares/oficial';
 
@@ -235,21 +235,19 @@ async function initApp() {
     }
 }
 
-// Check if Excel has changed on the server using a HEAD request (Content-Length and Last-Modified)
+// Check if Excel has changed on the server
 async function checkForExcelUpdates() {
     try {
-        const response = await fetch(DEFAULT_EXCEL_PATH, { method: 'HEAD' });
-        if (!response.ok) return;
-        
-        const serverSize = parseInt(response.headers.get('Content-Length')) || 0;
-        const serverLastModified = response.headers.get('Last-Modified') || '';
+        const latestResponse = await fetch('/api/latest-excel');
+        if (!latestResponse.ok) return;
+        const latestExcel = await latestResponse.json();
         
         const cachedMeta = await getDBItem('excel_metadata');
         
-        // If file differs from local version, download and reprocess
-        if (!cachedMeta || cachedMeta.size !== serverSize || cachedMeta.lastModified !== serverLastModified) {
+        // If file differs from local version or name is different, download and reprocess
+        if (!cachedMeta || cachedMeta.name !== latestExcel.name || cachedMeta.size !== latestExcel.size || cachedMeta.lastModified !== latestExcel.lastModified) {
             console.log('Detectado nuevo archivo Excel en el servidor. Actualizando...');
-            fetchDefaultExcel(true); // silent fetch in background
+            fetchDefaultExcel(true, latestExcel); // silent fetch in background
         } else {
             console.log('El archivo Excel local está al día con el servidor.');
         }
@@ -293,22 +291,30 @@ async function fetchBCVRate(silent = false) {
 }
 
 // Fetch default Excel from server
-async function fetchDefaultExcel(silent = false) {
+async function fetchDefaultExcel(silent = false, latestExcelData = null) {
     if (!silent) {
-        updateStatus('loading', 'Cargando base de datos...', 'Descargando archivo Excel base...');
+        updateStatus('loading', 'Cargando base de datos...', 'Buscando el archivo Excel más nuevo...');
     }
     
     try {
-        const response = await fetch(DEFAULT_EXCEL_PATH);
-        if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
+        let latestExcel = latestExcelData;
+        if (!latestExcel) {
+            const latestResponse = await fetch('/api/latest-excel');
+            if (!latestResponse.ok) throw new Error('No se pudo obtener información del último Excel');
+            latestExcel = await latestResponse.json();
+        }
         
-        const serverSize = parseInt(response.headers.get('Content-Length')) || 0;
-        const serverLastModified = response.headers.get('Last-Modified') || '';
+        if (!silent) {
+            updateStatus('loading', 'Cargando base de datos...', `Descargando ${latestExcel.name}...`);
+        }
+        
+        const response = await fetch(latestExcel.url);
+        if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
         
         const blob = await response.blob();
         const arrayBuffer = await blob.arrayBuffer();
         
-        appState.excelName = DEFAULT_EXCEL_PATH;
+        appState.excelName = latestExcel.name;
         appState.excelSize = blob.size;
         appState.excelDate = new Date().toLocaleDateString('es-VE');
         
@@ -328,9 +334,9 @@ async function fetchDefaultExcel(silent = false) {
         });
         
         await setDBItem('excel_metadata', {
-            name: DEFAULT_EXCEL_PATH,
-            size: serverSize || blob.size,
-            lastModified: serverLastModified || new Date().toUTCString(),
+            name: latestExcel.name,
+            size: latestExcel.size || blob.size,
+            lastModified: latestExcel.lastModified || new Date().toUTCString(),
             date: appState.excelDate
         });
         
@@ -1095,11 +1101,26 @@ function copySummaryToClipboard() {
 
 // Helper: Show Toast Notification
 function showToast(message, type = 'success') {
-    toast.textContent = message;
-    toast.className = `toast ${type === 'error' ? 'error' : 'success'}`;
+    let iconSvg = '';
+    if (type === 'success') {
+        iconSvg = `<svg class="toast-icon" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"/></svg>`;
+    } else if (type === 'error') {
+        iconSvg = `<svg class="toast-icon" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z" clip-rule="evenodd"/></svg>`;
+    } else if (type === 'warning') {
+        iconSvg = `<svg class="toast-icon" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 102 0V6a1 1 0 00-1-1z" clip-rule="evenodd"/></svg>`;
+    } else {
+        iconSvg = `<svg class="toast-icon" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clip-rule="evenodd"/></svg>`;
+    }
+
+    toast.innerHTML = `${iconSvg}<span>${message}</span>`;
+    toast.className = `toast ${type}`;
     toast.classList.remove('hidden');
     
-    setTimeout(() => {
+    if (toast.timeoutId) {
+        clearTimeout(toast.timeoutId);
+    }
+    
+    toast.timeoutId = setTimeout(() => {
         toast.classList.add('hidden');
     }, 3500);
 }
