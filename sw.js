@@ -1,13 +1,13 @@
-const CACHE_NAME = 'presupuestoapp-v17';
+const CACHE_NAME = 'presupuestoapp-v18';
 const ASSETS = [
     './',
     'index.html',
-    'style.css',
-    'main.js',
-    'worker.js',
-    'xlsx.full.min.js',
-    'icon-192.png',
-    'icon-512.png',
+    'css/style.css',
+    'js/main.js',
+    'js/worker.js',
+    'js/xlsx.full.min.js',
+    'assets/icon-192.png',
+    'assets/icon-512.png',
     'manifest.json'
 ];
 

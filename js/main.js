@@ -370,7 +370,7 @@ function updateStatus(type, title, desc) {
 // Process excel workbook using Web Worker in a background thread to prevent UI freezing
 function processExcelWithWorker(arrayBuffer) {
     return new Promise((resolve, reject) => {
-        const worker = new Worker('worker.js');
+        const worker = new Worker('js/worker.js');
         worker.onmessage = function (e) {
             const { success, data, error } = e.data;
             worker.terminate();
