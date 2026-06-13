@@ -1104,8 +1104,9 @@ input:disabled {
     display: flex;
     flex-direction: column;
     margin-top: 8px;
-    min-height: 54px;
+    min-height: 58px;
     justify-content: flex-start;
+    align-items: flex-end;
 }
 
 .matrix-card .price-usd {
@@ -1114,9 +1115,8 @@ input:disabled {
     line-height: 1.1;
     color: var(--text-primary);
     display: flex;
-    align-items: baseline;
-    gap: 6px;
-    flex-wrap: wrap;
+    flex-direction: column;
+    align-items: flex-end;
 }
 
 @media (min-width: 768px) {
@@ -1149,12 +1149,13 @@ input:disabled {
 }
 
 .matrix-card .igtf-subtext {
-    display: inline-block;
+    display: block;
     font-size: 0.62rem;
     font-weight: 500;
     color: var(--text-muted);
     line-height: 1.2;
-    margin-top: 0;
+    margin-top: 1px;
+    margin-bottom: 4px;
     opacity: 0.85;
 }
 
