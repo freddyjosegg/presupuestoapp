@@ -24,3 +24,4 @@ node_modules/
 
 # Puppeteer Test screenshots
 test_*.png
+.vercel

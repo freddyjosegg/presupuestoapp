@@ -1,0 +1,12 @@
+# Local development server
+server.js
+
+# Local SSL certificates
+key.pem
+cert.pem
+
+# Local tests and artifacts
+test.js
+test_*.png
+node_modules/
+.git/
