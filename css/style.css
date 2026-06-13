@@ -1177,11 +1177,11 @@ input:disabled {
 /* Card share button */
 .card-share-btn {
     position: absolute;
-    top: 8px;
-    right: 8px;
+    top: 12px;
+    right: 12px;
     z-index: 10;
-    width: 32px;
-    height: 32px;
+    width: 28px;
+    height: 28px;
     border-radius: 50%;
     background: rgba(255, 255, 255, 0.05);
     border: 1px solid var(--border-color);
@@ -1196,8 +1196,8 @@ input:disabled {
 }
 
 .card-share-btn svg {
-    width: 14px;
-    height: 14px;
+    width: 12px;
+    height: 12px;
 }
 
 .card-share-btn:hover {
@@ -1210,6 +1210,19 @@ input:disabled {
 
 .card-share-btn:active {
     transform: scale(0.95);
+}
+
+@media (min-width: 768px) {
+    .card-share-btn {
+        top: 16px;
+        right: 16px;
+        width: 30px;
+        height: 30px;
+    }
+    .card-share-btn svg {
+        width: 13px;
+        height: 13px;
+    }
 }
 
 @media (prefers-color-scheme: light) {

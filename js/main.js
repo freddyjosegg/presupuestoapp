@@ -565,7 +565,7 @@ function setupEventListeners() {
         if (shareBtn) {
             shareBtn.addEventListener('click', (e) => {
                 e.stopPropagation(); // Prevent selecting/activating the card when clicking share
-                shareBudget(opt);
+                shareBudget(opt, true);
             });
         }
     });
@@ -599,7 +599,7 @@ function setupEventListeners() {
     
     // Share budget
     if (btnShare) {
-        btnShare.addEventListener('click', () => shareBudget(appState.selectedOption));
+        btnShare.addEventListener('click', () => shareBudget(appState.selectedOption, false));
     }
     
     // Fetch rate button
@@ -1092,9 +1092,9 @@ function getSummaryText(opt) {
     if (res.seguroVal > 0) text += `Seguro de Mercancía: $${roundHalfUp(res.seguroVal, 2)}\n`;
     if (res.containerVal > 0) text += `Contenedor (10%): $${roundHalfUp(res.containerVal, 2)}\n`;
     text += `Subtotal Base: $${roundHalfUp(res.subtotal, 2)}\n`;
-    text += `IVA (16%): $${roundHalfUp(res.ivaVal, 2)}\n`;
-    text += `Franqueo Postal (10%): $${roundHalfUp(res.franqueoVal, 2)}\n`;
-    text += `IGTF (3%): $${roundHalfUp(res.igtfVal, 2)}\n`;
+    if (res.ivaVal > 0) text += `IVA (16%): $${roundHalfUp(res.ivaVal, 2)}\n`;
+    if (res.franqueoVal > 0) text += `Franqueo Postal (10%): $${roundHalfUp(res.franqueoVal, 2)}\n`;
+    if (res.igtfVal > 0) text += `IGTF (3%): $${roundHalfUp(res.igtfVal, 2)}\n`;
     text += `-----------------------------------\n`;
     text += `TOTAL ($): $${roundHalfUp(res.totalUSDSinIgtf, 2)} ($${roundHalfUp(res.totalUSD, 2)} con IGTF)\n`;
     text += `TOTAL (Bs.): Bs. ${formatBs(res.totalBs)}\n`;
@@ -1131,7 +1131,88 @@ function copyToClipboardFallback(text) {
 }
 
 // Share Budget using Web Share API or Clipboard Fallback
-function shareBudget(option) {
+function shareBudget(option, asImage = false) {
+    if (asImage) {
+        shareCardAsImage(option);
+    } else {
+        shareBudgetAsText(option);
+    }
+}
+
+// Share specific card as image using html2canvas and Web Share API
+function shareCardAsImage(option) {
+    const cardEl = matrixCards[option];
+    if (!cardEl) return;
+    
+    // Temporarily hide the share button inside the card so it doesn't appear in the screenshot
+    const shareBtn = cardEl.querySelector('.card-share-btn');
+    if (shareBtn) shareBtn.style.visibility = 'hidden';
+    
+    // Use html2canvas to render the card
+    window.html2canvas(cardEl, {
+        backgroundColor: null, // Transparent background if possible, or matches theme
+        scale: 2, // Increase resolution for sharing
+        logging: false,
+        useCORS: true
+    }).then(canvas => {
+        // Restore visibility of the share button
+        if (shareBtn) shareBtn.style.visibility = 'visible';
+        
+        canvas.toBlob(blob => {
+            if (!blob) {
+                showToast('Error al generar la imagen', 'error');
+                return;
+            }
+            
+            const file = new File([blob], `tarjeta-${option}.png`, { type: 'image/png' });
+            
+            // Check if Web Share API supports sharing files
+            if (navigator.canShare && navigator.canShare({ files: [file] })) {
+                navigator.share({
+                    files: [file],
+                    title: 'Presupuesto de Flete',
+                    text: `Presupuesto para escenario: ${option === 'origDir' ? 'Pago en Origen - Entrega a Dirección' :
+                                                          option === 'origAge' ? 'Pago en Origen - Retiro en Agencia' :
+                                                          option === 'destDir' ? 'Cobro en Destino - Entrega a Dirección' :
+                                                                                'Cobro en Destino - Retiro en Agencia'}`
+                }).then(() => {
+                    showToast('Imagen compartida con éxito');
+                }).catch(err => {
+                    if (err.name !== 'AbortError') {
+                        console.error('File share failed:', err);
+                        downloadImageFallback(canvas, option);
+                    }
+                });
+            } else {
+                // Fallback: download the image
+                downloadImageFallback(canvas, option);
+            }
+        }, 'image/png');
+    }).catch(err => {
+        console.error('html2canvas failed:', err);
+        if (shareBtn) shareBtn.style.visibility = 'visible';
+        showToast('Error al generar la imagen', 'error');
+    });
+}
+
+// Fallback to download the image in desktop or unsupported browsers
+function downloadImageFallback(canvas, option) {
+    try {
+        const link = document.createElement('a');
+        link.download = `presupuesto-${option}.png`;
+        link.href = canvas.toDataURL('image/png');
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+        showToast('Tarjeta descargada como imagen');
+    } catch (err) {
+        console.error('Download fallback failed:', err);
+        showToast('Error al descargar la imagen', 'error');
+    }
+}
+
+// Share Budget as text
+function shareBudgetAsText(option) {
     const text = getSummaryText(option);
     if (!text) return;
     
@@ -1142,7 +1223,6 @@ function shareBudget(option) {
         }).then(() => {
             showToast('Presupuesto compartido con éxito');
         }).catch(err => {
-            // Share canceled by user, do nothing or fallback if it is a real error
             if (err.name !== 'AbortError') {
                 console.error('Share failed:', err);
                 copyToClipboardFallback(text);
