@@ -951,9 +951,9 @@ function renderDetailedReceipt() {
     }
     
     if (opt.endsWith('Dir')) {
-        title.textContent = 'Presupuesto: Entrega a Dirección';
+        title.textContent = 'Entrega a Dirección';
     } else {
-        title.textContent = 'Presupuesto: Retiro en Agencia';
+        title.textContent = 'Retiro en Agencia';
     }
     
     // 2. Line Items

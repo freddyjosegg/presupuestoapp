@@ -1216,6 +1216,13 @@ input:disabled {
     padding-bottom: 18px;
 }
 
+.receipt-title-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 16px;
+}
+
 .receipt-title-area {
     display: flex;
     align-items: center;
@@ -1231,12 +1238,17 @@ input:disabled {
     border-radius: 20px;
     text-transform: uppercase;
     letter-spacing: 0.5px;
+    display: inline-block;
 }
 
 .receipt-header h3 {
     font-size: 1rem;
     font-weight: 700;
     color: var(--receipt-text);
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    flex-wrap: wrap;
 }
 
 .receipt-meta {
@@ -1249,7 +1261,6 @@ input:disabled {
 .receipt-date-container {
     display: flex;
     justify-content: flex-start;
-    margin-bottom: 6px;
 }
 
 #receiptDate {
