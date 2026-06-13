@@ -1032,7 +1032,7 @@ input:disabled {
 
 @media (min-width: 768px) {
     .matrix-card {
-        padding: 20px;
+        padding: 22px;
     }
 }
 
@@ -1103,8 +1103,8 @@ input:disabled {
 .matrix-card .price-container {
     display: flex;
     flex-direction: column;
-    margin-top: 4px;
-    min-height: 52px;
+    margin-top: 8px;
+    min-height: 54px;
     justify-content: flex-start;
 }
 
@@ -1150,11 +1150,12 @@ input:disabled {
 
 .matrix-card .igtf-subtext {
     display: inline-block;
-    font-size: 0.65rem;
+    font-size: 0.62rem;
     font-weight: 500;
     color: var(--text-muted);
     line-height: 1.2;
     margin-top: 0;
+    opacity: 0.85;
 }
 
 .total-row .igtf-subtext {
@@ -1282,9 +1283,10 @@ input:disabled {
 }
 
 .receipt-item.flete-neto-row {
-    padding-top: 6px;
-    margin-top: 4px;
-    border-top: 1px solid var(--border-color);
+    padding-top: 8px;
+    margin-top: 6px;
+    border-top: none;
+    font-weight: 600;
 }
 
 .receipt-item.hidden {
@@ -1349,9 +1351,9 @@ input:disabled {
 }
 
 .bs-row {
-    border-top: 1px solid var(--border-color);
-    padding-top: 8px;
-    margin-top: 4px;
+    padding-top: 4px;
+    margin-top: 2px;
+    border-top: none;
 }
 
 .bs-note {

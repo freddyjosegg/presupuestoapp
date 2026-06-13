@@ -1,4 +1,4 @@
-const CACHE_NAME = 'presupuestoapp-v5';
+const CACHE_NAME = 'presupuestoapp-v6';
 const ASSETS = [
     './',
     'index.html',
