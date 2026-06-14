@@ -1148,9 +1148,13 @@ function shareCardAsImage(option) {
     const shareBtn = cardEl.querySelector('.card-share-btn');
     if (shareBtn) shareBtn.style.visibility = 'hidden';
     
+    // Determine background color based on active theme to avoid transparency
+    const isLightMode = window.matchMedia && window.matchMedia('(prefers-color-scheme: light)').matches;
+    const exportBgColor = isLightMode ? '#f8fafc' : '#080c14';
+
     // Use html2canvas to render the card
     window.html2canvas(cardEl, {
-        backgroundColor: null, // Transparent background if possible, or matches theme
+        backgroundColor: exportBgColor,
         scale: 2, // Increase resolution for sharing
         logging: false,
         useCORS: true
