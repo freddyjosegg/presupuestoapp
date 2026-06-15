@@ -40,14 +40,24 @@
                 </button>
             </div>
             
-            <!-- Excel Watcher Status (Click or Drag Excel to update) -->
-            <div class="excel-status-card" id="excelStatus" title="Haga clic o arrastre un archivo Excel aquí para actualizar tarifas">
-                <div class="status-indicator loading"></div>
-                <div class="status-info">
-                    <span class="status-title">Cargando base de datos...</span>
-                    <span class="status-desc">Iniciando base de datos Excel...</span>
+            <!-- Header Actions -->
+            <div class="header-actions">
+                <button id="btnHelp" class="btn-help" title="Manual de Uso y Video Demostrativo">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" class="help-icon">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M9.879 7.519c1.171-1.025 3.071-1.025 4.242 0 1.172 1.025 1.172 2.687 0 3.712-.203.179-.43.326-.67.442-.745.361-1.45.999-1.45 1.827v.75M21 12a9 9 0 11-18 0 9 9 0 0118 0zm-9 5.25h.008v.008H12v-.008z" />
+                    </svg>
+                    <span>Manual</span>
+                </button>
+
+                <!-- Excel Watcher Status (Click or Drag Excel to update) -->
+                <div class="excel-status-card" id="excelStatus" title="Haga clic o arrastre un archivo Excel aquí para actualizar tarifas">
+                    <div class="status-indicator loading"></div>
+                    <div class="status-info">
+                        <span class="status-title">Cargando base de datos...</span>
+                        <span class="status-desc">Iniciando base de datos Excel...</span>
+                    </div>
+                    <input type="file" id="excelFileInput" accept=".xlsx, .xlsm" style="display: none;">
                 </div>
-                <input type="file" id="excelFileInput" accept=".xlsx, .xlsm" style="display: none;">
             </div>
         </header>
 
@@ -441,5 +451,51 @@
       window.va = window.va || function () { (window.vaq = window.vaq || []).push(arguments); };
     </script>
     <script defer src="/_vercel/insights/script.js"></script>
+    <!-- Help & Manual Modal -->
+    <div id="helpModal" class="modal-overlay hidden">
+        <div class="modal-content help-modal-content">
+            <div class="modal-header">
+                <h2>Manual de Uso & Video Demostrativo</h2>
+                <button id="btnCloseHelp" class="btn-close-modal">&times;</button>
+            </div>
+            <div class="modal-body help-modal-body">
+                <!-- Video Tutorial -->
+                <div class="help-video-container">
+                    <video controls width="100%" class="help-video" style="border-radius: 12px; box-shadow: 0 8px 24px rgba(0,0,0,0.15); margin-bottom: 20px; background: #000;">
+                        <source src="manual_demo.mp4" type="video/mp4">
+                        Tu navegador no soporta el elemento de video.
+                    </video>
+                </div>
+                
+                <!-- Manual Steps Text -->
+                <div class="help-steps-text">
+                    <h3>Guía Rápida de Uso</h3>
+                    <ol>
+                        <li>
+                            <strong>Conexión Excel:</strong> Haz clic en el indicador superior derecho o arrastra tu archivo Excel de tarifas oficiales (<code>.xlsx</code> / <code>.xlsm</code>). El indicador se pondrá en verde una vez cargado.
+                        </li>
+                        <li>
+                            <strong>Ingreso de Rutas:</strong> Escribe y selecciona las localidades de Origen y Destino desde los desplegables interactivos.
+                        </li>
+                        <li>
+                            <strong>Peso Físico:</strong> Haz clic en el campo Peso. Todo el texto se autoseleccionará para una rápida escritura.
+                        </li>
+                        <li>
+                            <strong>Tasa del Dólar (Semáforo):</strong> Haz clic en el botón de actualización al lado de la tasa. El botón cambiará dinámicamente de color (🟡 Consultando, 🟢 Éxito, 🔴 Error).
+                        </li>
+                        <li>
+                            <strong>Matriz Comparativa:</strong> Haz clic sobre cualquiera de las 4 opciones de la matriz comparativa (Origen-Dirección, Origen-Agencia, Destino-Dirección, Destino-Agencia) para ver el desglose en el recibo.
+                        </li>
+                        <li>
+                            <strong>Servicios Adicionales:</strong> Habilita seguros, Acuse de Recibo (CAR/CARF), etc., para recalcular al instante.
+                        </li>
+                        <li>
+                            <strong>Imprimir / Compartir:</strong> Al pie de la factura, pulsa <strong>Imprimir</strong> (abre diálogo de impresión PDF) o <strong>Compartir</strong> (copia resumen en texto). En cada tarjeta de la matriz comparativa también tienes un botón para exportar/compartir la tarjeta como imagen PNG con fondo sólido.
+                        </li>
+                    </ol>
+                </div>
+            </div>
+        </div>
+    </div>
 </body>
 </html>

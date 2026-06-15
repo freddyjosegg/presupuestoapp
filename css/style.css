@@ -624,6 +624,28 @@ input:disabled {
     100% { transform: rotate(360deg); }
 }
 
+/* Traffic light colors and states */
+.btn-fetch-rate.loading {
+    color: var(--warning) !important;
+}
+
+.btn-fetch-rate.success {
+    color: var(--success) !important;
+    transform: translateY(-50%) scale(1.15) !important;
+}
+
+.btn-fetch-rate.error {
+    color: var(--error) !important;
+    transform: translateY(-50%) scale(1.15) !important;
+    animation: shake-rate 0.4s ease;
+}
+
+@keyframes shake-rate {
+    0%, 100% { transform: translateY(-50%) translateX(0); }
+    25% { transform: translateY(-50%) translateX(-3px); }
+    75% { transform: translateY(-50%) translateX(3px); }
+}
+
 /* Route Info Card */
 .route-info-card {
     display: grid;
@@ -1056,9 +1078,21 @@ input:disabled {
     }
 }
 
+/* Active Card state */
 .matrix-card.active {
     background: rgba(211, 47, 47, 0.04);
     border-color: rgba(211, 47, 47, 0.2);
+}
+
+/* Enforce solid background during image sharing */
+.matrix-card.html2canvas-sharing {
+    background: #111625 !important;
+}
+
+@media (prefers-color-scheme: light) {
+    .matrix-card.html2canvas-sharing {
+        background: #ffffff !important;
+    }
 }
 
 .matrix-card.active::after {
@@ -1726,4 +1760,187 @@ input:disabled {
 .pwa-install-icon {
     width: 14px;
     height: 14px;
+}
+
+/* Header Actions Layout */
+.header-actions {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+}
+
+/* Help Button Style */
+.btn-help {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    background: rgba(255, 255, 255, 0.04);
+    border: 1px solid var(--border-color);
+    color: var(--text-secondary);
+    padding: 8px 16px;
+    border-radius: 20px;
+    font-weight: 600;
+    font-size: 13px;
+    cursor: pointer;
+    transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+    box-shadow: var(--shadow-sm);
+    outline: none;
+    height: 38px;
+}
+
+.btn-help:hover {
+    color: var(--text-primary);
+    background: rgba(255, 255, 255, 0.08);
+    border-color: rgba(255, 255, 255, 0.15);
+    transform: translateY(-1px);
+}
+
+.btn-help:active {
+    transform: translateY(1px);
+}
+
+.help-icon {
+    width: 16px;
+    height: 16px;
+}
+
+/* Help Modal Overlay */
+.modal-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(8, 12, 20, 0.5);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 999999;
+    opacity: 1;
+    transition: opacity 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.modal-overlay.hidden {
+    opacity: 0;
+    pointer-events: none;
+}
+
+.modal-content.help-modal-content {
+    background: var(--bg-card);
+    border: 1px solid var(--border-color);
+    border-radius: 20px;
+    width: 92%;
+    max-width: 760px;
+    max-height: 85vh;
+    box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    transform: scale(1);
+    transition: transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+.modal-overlay.hidden .modal-content.help-modal-content {
+    transform: scale(0.96);
+}
+
+.modal-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 20px 24px;
+    border-bottom: 1px solid var(--border-color);
+}
+
+.modal-header h2 {
+    font-size: 1.15rem;
+    font-weight: 700;
+    margin: 0;
+    color: var(--text-primary);
+}
+
+.btn-close-modal {
+    background: transparent;
+    border: none;
+    font-size: 26px;
+    line-height: 1;
+    cursor: pointer;
+    color: var(--text-muted);
+    transition: color 0.2s;
+    outline: none;
+}
+
+.btn-close-modal:hover {
+    color: var(--text-primary);
+}
+
+.help-modal-body {
+    padding: 24px;
+    overflow-y: auto;
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+}
+
+.help-video-container {
+    width: 100%;
+}
+
+.help-video {
+    outline: none;
+    border: 1px solid var(--border-color);
+}
+
+.help-steps-text h3 {
+    margin-top: 0;
+    margin-bottom: 12px;
+    font-size: 1.05rem;
+    font-weight: 600;
+    color: var(--text-primary);
+}
+
+.help-steps-text ol {
+    padding-left: 20px;
+    margin: 0;
+}
+
+.help-steps-text li {
+    margin-bottom: 10px;
+    line-height: 1.55;
+    font-size: 0.82rem;
+    color: var(--text-secondary);
+}
+
+.help-steps-text li strong {
+    color: var(--text-primary);
+}
+
+.help-steps-text li code {
+    background: rgba(255, 255, 255, 0.05);
+    padding: 2px 5px;
+    border-radius: 4px;
+    font-family: monospace;
+    font-size: 0.75rem;
+}
+
+@media (prefers-color-scheme: light) {
+    .btn-help {
+        background: rgba(15, 23, 42, 0.03);
+        border-color: rgba(15, 23, 42, 0.08);
+        color: #475569;
+    }
+    .btn-help:hover {
+        background: rgba(15, 23, 42, 0.06);
+        color: #0f172a;
+    }
+    .modal-overlay {
+        background: rgba(15, 23, 42, 0.35);
+    }
+    .help-steps-text li code {
+        background: rgba(15, 23, 42, 0.04);
+        color: #0f172a;
+    }
 }

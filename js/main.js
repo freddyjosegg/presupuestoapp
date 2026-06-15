@@ -259,6 +259,7 @@ async function checkForExcelUpdates() {
 // Fetch BCV Exchange Rate from ve.dolarapi.com
 async function fetchBCVRate(silent = false) {
     if (btnFetchRate) {
+        btnFetchRate.classList.remove('success', 'error');
         btnFetchRate.classList.add('loading');
     }
     
@@ -277,15 +278,23 @@ async function fetchBCVRate(silent = false) {
                     showToast(`Tasa BCV actualizada: Bs. ${rate.toFixed(2)}`);
                 }
             }
+            if (btnFetchRate) {
+                btnFetchRate.classList.remove('loading');
+                btnFetchRate.classList.add('success');
+                setTimeout(() => btnFetchRate.classList.remove('success'), 2000);
+            }
+        } else {
+            throw new Error('Tasa no válida');
         }
     } catch (error) {
         console.error('Error fetching BCV rate:', error);
         if (!silent) {
             showToast('Error al conectar con la API de tasa de cambio', 'error');
         }
-    } finally {
         if (btnFetchRate) {
             btnFetchRate.classList.remove('loading');
+            btnFetchRate.classList.add('error');
+            setTimeout(() => btnFetchRate.classList.remove('error'), 2000);
         }
     }
 }
@@ -551,6 +560,10 @@ function setupEventListeners() {
         weightInput.value = val.toFixed(3);
     });
     
+    weightInput.addEventListener('focus', () => {
+        weightInput.select();
+    });
+    
     // Matrix selection clicks
     Object.keys(matrixCards).forEach(opt => {
         matrixCards[opt].addEventListener('click', () => {
@@ -605,6 +618,31 @@ function setupEventListeners() {
     // Fetch rate button
     if (btnFetchRate) {
         btnFetchRate.addEventListener('click', () => fetchBCVRate(false));
+    }
+
+    // Help & Manual Modal listeners
+    const btnHelp = document.getElementById('btnHelp');
+    const helpModal = document.getElementById('helpModal');
+    const btnCloseHelp = document.getElementById('btnCloseHelp');
+    
+    if (btnHelp && helpModal && btnCloseHelp) {
+        btnHelp.addEventListener('click', () => {
+            helpModal.classList.remove('hidden');
+        });
+        
+        btnCloseHelp.addEventListener('click', () => {
+            helpModal.classList.add('hidden');
+            const video = helpModal.querySelector('.help-video');
+            if (video) video.pause();
+        });
+        
+        helpModal.addEventListener('click', (e) => {
+            if (e.target === helpModal) {
+                helpModal.classList.add('hidden');
+                const video = helpModal.querySelector('.help-video');
+                if (video) video.pause();
+            }
+        });
     }
 }
 
@@ -1148,6 +1186,9 @@ function shareCardAsImage(option) {
     const shareBtn = cardEl.querySelector('.card-share-btn');
     if (shareBtn) shareBtn.style.visibility = 'hidden';
     
+    // Temporarily add class to make background solid and remove translucent red tint
+    cardEl.classList.add('html2canvas-sharing');
+    
     // Determine background color based on active theme to avoid transparency
     const isLightMode = window.matchMedia && window.matchMedia('(prefers-color-scheme: light)').matches;
     const exportBgColor = isLightMode ? '#f8fafc' : '#080c14';
@@ -1159,8 +1200,9 @@ function shareCardAsImage(option) {
         logging: false,
         useCORS: true
     }).then(canvas => {
-        // Restore visibility of the share button
+        // Restore visibility of the share button and remove sharing class
         if (shareBtn) shareBtn.style.visibility = 'visible';
+        cardEl.classList.remove('html2canvas-sharing');
         
         canvas.toBlob(blob => {
             if (!blob) {
@@ -1195,6 +1237,7 @@ function shareCardAsImage(option) {
     }).catch(err => {
         console.error('html2canvas failed:', err);
         if (shareBtn) shareBtn.style.visibility = 'visible';
+        cardEl.classList.remove('html2canvas-sharing');
         showToast('Error al generar la imagen', 'error');
     });
 }
