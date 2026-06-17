@@ -29,3 +29,7 @@ test_*.png
 # Mass simulation test artifacts
 generate_5000_tests.js
 presupuestos_5000_test.xlsx
+
+# Local test scripts
+test.js
+test_offline.js
