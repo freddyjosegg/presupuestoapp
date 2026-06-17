@@ -25,3 +25,7 @@ node_modules/
 # Puppeteer Test screenshots
 test_*.png
 .vercel
+
+# Mass simulation test artifacts
+generate_5000_tests.js
+presupuestos_5000_test.xlsx
