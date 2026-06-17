@@ -27,9 +27,7 @@ test_*.png
 .vercel
 
 # Mass simulation test artifacts
-generate_5000_tests.js
 presupuestos_5000_test.xlsx
 
 # Local test scripts
-test.js
-test_offline.js
+# (Los scripts en folders tests/ y scripts/ se guardarán en remoto)
