@@ -646,6 +646,37 @@ input:disabled {
     75% { transform: translateY(-50%) translateX(3px); }
 }
 
+/* Warning/Error state for exchange rate input and helper text */
+input[id="exchangeRate"].rate-warning {
+    border-color: var(--warning);
+    background: rgba(245, 158, 11, 0.03);
+    box-shadow: 0 0 0 3px rgba(245, 158, 11, 0.15);
+}
+
+@media (prefers-color-scheme: light) {
+    input[id="exchangeRate"].rate-warning {
+        background: rgba(245, 158, 11, 0.05);
+        border-color: var(--warning);
+    }
+}
+
+.rate-warning-text {
+    font-size: 0.7rem;
+    font-weight: 600;
+    color: var(--warning);
+    margin-top: 5px;
+    display: block;
+    animation: fadeIn 0.3s ease;
+}
+
+.rate-warning-text.hidden {
+    display: none;
+}
+
+.text-warning {
+    color: var(--warning) !important;
+}
+
 /* Route Info Card */
 .route-info-card {
     display: grid;

@@ -263,6 +263,11 @@ async function fetchBCVRate(silent = false) {
         btnFetchRate.classList.add('loading');
     }
     
+    // Clear warning style when attempting to fetch
+    exchangeRate.classList.remove('rate-warning');
+    const warningText = document.getElementById('rateWarningText');
+    if (warningText) warningText.classList.add('hidden');
+    
     try {
         const response = await fetch(`${BCV_API_URL}?t=${Date.now()}`);
         if (!response.ok) throw new Error('Network response was not ok');
@@ -273,6 +278,8 @@ async function fetchBCVRate(silent = false) {
         if (!isNaN(rate) && rate > 0) {
             if (!userEditedRate || !silent) {
                 exchangeRate.value = rate.toFixed(2);
+                exchangeRate.classList.remove('rate-warning');
+                if (warningText) warningText.classList.add('hidden');
                 calculateAll();
                 if (!silent) {
                     showToast(`Tasa BCV actualizada: Bs. ${rate.toFixed(2)}`);
@@ -288,6 +295,14 @@ async function fetchBCVRate(silent = false) {
         }
     } catch (error) {
         console.error('Error fetching BCV rate:', error);
+        
+        // Show warning style if exchangeRate value is empty or invalid
+        const currentRate = parseFloat(exchangeRate.value);
+        if (isNaN(currentRate) || currentRate <= 0) {
+            exchangeRate.classList.add('rate-warning');
+            if (warningText) warningText.classList.remove('hidden');
+        }
+        
         if (!silent) {
             showToast('Error al conectar con la API de tasa de cambio', 'error');
         }
@@ -550,6 +565,15 @@ function setupEventListeners() {
             }
             if (input === exchangeRate) {
                 userEditedRate = true;
+                const val = parseFloat(exchangeRate.value);
+                const warningText = document.getElementById('rateWarningText');
+                if (!isNaN(val) && val > 0) {
+                    exchangeRate.classList.remove('rate-warning');
+                    if (warningText) warningText.classList.add('hidden');
+                } else {
+                    exchangeRate.classList.add('rate-warning');
+                    if (warningText) warningText.classList.remove('hidden');
+                }
             }
             calculateAll();
         });
@@ -816,7 +840,8 @@ function calculateAll() {
     // Core parameters
     const physWeight = parseFloat(weightInput.value) || 0;
     const bCount = Math.max(1, parseInt(bultosCount.value) || 1);
-    const exRate = parseFloat(exchangeRate.value) || 36.50;
+    const exRate = parseFloat(exchangeRate.value);
+    const hasValidRate = !isNaN(exRate) && exRate > 0;
     const decVal = parseFloat(declaredValue.value) || 0;
     const discPercent = parseFloat(discountPercent.value) || 0;
     
@@ -845,10 +870,10 @@ function calculateAll() {
     
     // Calculate for each of the 4 combinations
     const results = {
-        origDir: runScenario('direccion', false, finalWeight, route.escala, decVal, discPercent, bCount, exRate),
-        origAge: runScenario('agencia', false, finalWeight, route.escala, decVal, discPercent, bCount, exRate),
-        destDir: runScenario('direccion', true, finalWeight, route.escala, decVal, discPercent, bCount, exRate),
-        destAge: runScenario('agencia', true, finalWeight, route.escala, decVal, discPercent, bCount, exRate)
+        origDir: runScenario('direccion', false, finalWeight, route.escala, decVal, discPercent, bCount, hasValidRate ? exRate : 0),
+        origAge: runScenario('agencia', false, finalWeight, route.escala, decVal, discPercent, bCount, hasValidRate ? exRate : 0),
+        destDir: runScenario('direccion', true, finalWeight, route.escala, decVal, discPercent, bCount, hasValidRate ? exRate : 0),
+        destAge: runScenario('agencia', true, finalWeight, route.escala, decVal, discPercent, bCount, hasValidRate ? exRate : 0)
     };
     
     // Store calculations in state for receipt rendering
@@ -861,7 +886,13 @@ function calculateAll() {
         const bsEl = document.getElementById(`matrixBs_${opt}`);
         
         usdEl.innerHTML = `$${roundHalfUp(res.totalUSDSinIgtf, 2)}<span class="igtf-subtext">($${roundHalfUp(res.totalUSD, 2)} con IGTF)</span>`;
-        bsEl.textContent = `Bs. ${formatBs(res.totalBs)}`;
+        if (hasValidRate) {
+            bsEl.textContent = `Bs. ${formatBs(res.totalBs)}`;
+            bsEl.classList.remove('text-warning');
+        } else {
+            bsEl.textContent = 'Bs. Ingrese Tasa';
+            bsEl.classList.add('text-warning');
+        }
     });
     
     // Render active receipt details
@@ -1080,7 +1111,15 @@ function renderDetailedReceipt() {
     document.getElementById('itemIgtfUSD').textContent = `$${roundHalfUp(res.igtfVal, 2)}`;
     
     document.getElementById('itemTotalUSD').innerHTML = `$${roundHalfUp(res.totalUSDSinIgtf, 2)}<span class="igtf-subtext">($${roundHalfUp(res.totalUSD, 2)} con IGTF)</span>`;
-    document.getElementById('itemTotalBs').textContent = `Bs. ${formatBs(res.totalBs)}`;
+    
+    const hasValidRate = !isNaN(res.exRate) && res.exRate > 0;
+    if (hasValidRate) {
+        document.getElementById('itemTotalBs').textContent = `Bs. ${formatBs(res.totalBs)}`;
+        document.getElementById('itemTotalBs').classList.remove('text-warning');
+    } else {
+        document.getElementById('itemTotalBs').textContent = 'Bs. Ingrese Tasa';
+        document.getElementById('itemTotalBs').classList.add('text-warning');
+    }
     
     // Set legal note date
     const printDate = appState.excelDate || new Date().toLocaleDateString('es-VE');
