@@ -6,7 +6,13 @@
   "scripts": {
     "start": "node server.js",
     "dev": "node server.js",
-    "test": "node test.js"
+    "test": "node tests/test.js",
+    "test:math": "node tests/test_math_unit.js",
+    "test:offline": "node tests/test_offline.js",
+    "test:excel": "node tests/test_excel_validation.js",
+    "test:visual": "node tests/test_visual_regression.js",
+    "test:pwa": "node tests/test_pwa_lifecycle.js",
+    "test:all": "npm run test:math && npm run test:offline && npm run test:excel && npm run test:pwa"
   },
   "keywords": [
     "fletes",
@@ -16,6 +22,8 @@
   "author": "Fred",
   "license": "ISC",
   "devDependencies": {
+    "pixelmatch": "^7.2.0",
+    "pngjs": "^7.0.0",
     "puppeteer": "^25.1.0"
   }
 }
