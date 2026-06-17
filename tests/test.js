@@ -135,7 +135,8 @@ const path = require('path');
         // Validaciones: El total en Bs. debe coincidir con la fórmula de Excel de conversión y redondeo por componentes
         const roundUpDec = (val, decimals = 3) => {
             const factor = Math.pow(10, decimals);
-            return Math.ceil((val - 1e-9) * factor) / factor;
+            const res = Math.ceil((val - 1e-9) * factor) / factor;
+            return res === 0 ? 0 : res;
         };
         const roundHalfUpNum = (val, decimals = 2) => {
             const factor = Math.pow(10, decimals);

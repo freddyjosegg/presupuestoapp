@@ -33,7 +33,8 @@ function roundUpDec(val, decimals = 3) {
         return 0;
     }
     const factor = Math.pow(10, decimals);
-    return Math.ceil((val - 1e-9) * factor) / factor;
+    const res = Math.ceil((val - 1e-9) * factor) / factor;
+    return res === 0 ? 0 : res;
 }
 
 

@@ -19,7 +19,8 @@ function truncDec(val, decimals = 3) {
 function roundUpDec(val, decimals = 3) {
     if (val === undefined || val === null || isNaN(val)) return 0;
     const factor = Math.pow(10, decimals);
-    return Math.ceil((val - 1e-9) * factor) / factor;
+    const res = Math.ceil((val - 1e-9) * factor) / factor;
+    return res === 0 ? 0 : res;
 }
 
 // === MOTOR DE CÁLCULO (IDÉNTICO A RUNSCENARIO EN MAIN.JS) ===
